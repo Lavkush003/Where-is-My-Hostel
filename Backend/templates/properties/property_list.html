@@ -1,0 +1,808 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Browse Stays | {{ site_name }}{% endblock %}
+{% block meta_description %}Smart location-based student search. Find verified PGs, hostels and private rooms near coaching centres, universities and stations across India.{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    .leaflet-popup-content-wrapper { border-radius: 1.25rem; box-shadow: 0 15px 30px -5px rgba(0,0,0,0.18); padding: 0; overflow: hidden; }
+    .leaflet-popup-content { margin: 0; line-height: 1.4; }
+    .property-card-active { ring: 2px solid #081a33; border-color: #f59e0b !important; transform: translateY(-2px); }
+    .destination-pulse {
+        animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-white py-8 sm:py-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-brand-800 ring-1 ring-inset ring-brand-200">
+                        <span class="h-2 w-2 rounded-full bg-accent-500 animate-pulse"></span>
+                        Smart Location Search
+                    </span>
+                    {% if searched_location %}
+                        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                            Near {{ searched_location.name }}
+                        </span>
+                    {% endif %}
+                </div>
+                <h1 class="mt-2.5 text-2xl font-extrabold tracking-tight text-brand-950 sm:text-3xl lg:text-4xl">
+                    {% if searched_location %}
+                        Stays Near <span class="text-brand-700">{{ searched_location.name }}</span>
+                    {% elif city %}
+                        Verified Stays in <span class="text-brand-700">{{ city }}</span>
+                    {% else %}
+                        Student PGs, Hostels & Rooms Across India
+                    {% endif %}
+                </h1>
+                <p class="mt-1.5 max-w-3xl text-sm leading-6 text-slate-600">
+                    Discover verified accommodation measured with actual Haversine distance from your coaching institute, university or station.
+                </p>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div class="flex items-center gap-1 rounded-2xl bg-slate-100 p-1.5 shadow-inner">
+                <button type="button" id="btn-view-split" class="flex items-center gap-2 rounded-xl bg-white px-3.5 py-1.5 text-xs font-extrabold text-brand-950 shadow-sm transition">
+                    <svg class="h-4 w-4 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.5 0h15a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H4.5A1.5 1.5 0 0 0 3 6v12a1.5 1.5 0 0 0 1.5 1.5Z"/></svg>
+                    Split Map & List
+                </button>
+                <button type="button" id="btn-view-list" class="flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                    List Only
+                </button>
+                <button type="button" id="btn-view-map" class="flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition lg:hidden">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
+                    Full Map
+                </button>
+            </div>
+        </div>
+
+        <!-- SEARCH & SMART FILTER FORM -->
+        <form method="get" action="{% url 'properties:list' %}" id="search-filter-form" class="mt-6" role="search">
+            <!-- Hidden inputs preserving geocoded lat/lng and view -->
+            <input type="hidden" name="lat" id="search-lat" value="{% if target_lat %}{{ target_lat }}{% endif %}">
+            <input type="hidden" name="lng" id="search-lng" value="{% if target_lng %}{{ target_lng }}{% endif %}">
+            <input type="hidden" name="destination" id="search-destination" value="{{ destination }}">
+            <input type="hidden" name="view" id="search-view" value="{{ view_mode }}">
+
+            <div class="rounded-3xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm backdrop-blur sm:p-5">
+                <!-- Row 1: Location input with instant autocomplete + Radius + Sort -->
+                <div class="grid gap-3 lg:grid-cols-12">
+                    <!-- Location / Landmark Input with Autocomplete (lg:col-span-5) -->
+                    <div class="relative lg:col-span-5">
+                        <label for="stay-search-input" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                            Search Destination / Institute / Landmark
+                        </label>
+                        <div class="relative">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-brand-600">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                            </span>
+                            <input id="stay-search-input"
+                                   name="q"
+                                   type="search"
+                                   autocomplete="off"
+                                   value="{% if destination %}{{ destination }}{% elif query %}{{ query }}{% endif %}"
+                                   placeholder="e.g. Allen Kota, Mukherjee Nagar, Prayagraj Jn..."
+                                   class="w-full rounded-2xl border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200"
+                                   aria-autocomplete="list"
+                                   aria-expanded="false">
+                            <button type="button" id="clear-search-btn" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 {% if not query and not destination %}hidden{% endif %}">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- Instant Autocomplete Dropdown List -->
+                        <div id="autocomplete-dropdown" class="absolute left-0 right-0 top-full z-50 mt-2 hidden max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/15">
+                            <p class="px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Popular Institutes & Hubs</p>
+                            <div id="autocomplete-items" class="divide-y divide-slate-100"></div>
+                        </div>
+                    </div>
+
+                    <!-- City Selector (lg:col-span-2) -->
+                    <div class="lg:col-span-2">
+                        <label for="city-select" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">City</label>
+                        <select id="city-select" name="city" class="w-full rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200">
+                            <option value="">All Indian Cities</option>
+                            {% for c in available_cities %}
+                                <option value="{{ c }}" {% if city|lower == c|lower %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Distance Radius Selector (lg:col-span-2) -->
+                    <div class="lg:col-span-2">
+                        <label for="radius-select" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">Distance Radius</label>
+                        <select id="radius-select" name="radius" class="w-full rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200">
+                            <option value="0.5" {% if radius_km == 0.5 %}selected{% endif %}>Within 500 metres</option>
+                            <option value="1.0" {% if radius_km == 1.0 %}selected{% endif %}>Within 1 kilometre</option>
+                            <option value="2.0" {% if radius_km == 2.0 %}selected{% endif %}>Within 2 kilometres</option>
+                            <option value="3.0" {% if radius_km == 3.0 %}selected{% endif %}>Within 3 kilometres</option>
+                            <option value="5.0" {% if radius_km == 5.0 %}selected{% endif %}>Within 5 kilometres</option>
+                            <option value="10.0" {% if radius_km == 10.0 %}selected{% endif %}>Within 10 kilometres</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By (lg:col-span-2) -->
+                    <div class="lg:col-span-2">
+                        <label for="sort-select" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">Sort By</label>
+                        <select id="sort-select" name="sort" class="w-full rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200">
+                            <option value="nearest" {% if sort_by == 'nearest' %}selected{% endif %}>Nearest First</option>
+                            <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+                            <option value="rent_asc" {% if sort_by == 'rent_asc' %}selected{% endif %}>Lowest Rent</option>
+                            <option value="rent_desc" {% if sort_by == 'rent_desc' %}selected{% endif %}>Highest Rent</option>
+                            <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Recently Added</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Submit Button (lg:col-span-1) -->
+                    <div class="flex items-end lg:col-span-1">
+                        <button type="submit" class="btn-primary w-full justify-center rounded-2xl py-2.5 shadow-md">
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Row 2: Secondary Advanced Filters (Category, Gender, Sharing, AC, Min/Max Budget, Furnishing) -->
+                <div class="mt-4 grid gap-3 border-t border-slate-200 pt-3 sm:grid-cols-2 lg:grid-cols-6">
+                    <div>
+                        <label for="type-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Accommodation Category</label>
+                        <select id="type-filter" name="type" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">All Categories</option>
+                            <option value="pg" {% if stay_type == 'pg' %}selected{% endif %}>PG Accommodation</option>
+                            <option value="student_hostel" {% if stay_type == 'student_hostel' %}selected{% endif %}>Student Hostel</option>
+                            <option value="private_hostel" {% if stay_type == 'private_hostel' %}selected{% endif %}>Private Hostel</option>
+                            <option value="independent_room" {% if stay_type == 'independent_room' %}selected{% endif %}>Independent Room</option>
+                            <option value="shared_room" {% if stay_type == 'shared_room' %}selected{% endif %}>Shared Rental Room</option>
+                            <option value="coliving" {% if stay_type == 'coliving' %}selected{% endif %}>Co-living Space</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="gender-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Gender Preference</label>
+                        <select id="gender-filter" name="gender" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">All Genders</option>
+                            <option value="boys" {% if gender == 'boys' %}selected{% endif %}>Boys Only</option>
+                            <option value="girls" {% if gender == 'girls' %}selected{% endif %}>Girls Only</option>
+                            <option value="unisex" {% if gender == 'unisex' %}selected{% endif %}>Unisex / All</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="sharing-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Room Sharing</label>
+                        <select id="sharing-filter" name="sharing" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">Any Occupancy</option>
+                            <option value="single" {% if sharing == 'single' %}selected{% endif %}>Single Occupancy</option>
+                            <option value="double" {% if sharing == 'double' %}selected{% endif %}>Double Sharing</option>
+                            <option value="triple" {% if sharing == 'triple' %}selected{% endif %}>Triple Sharing</option>
+                            <option value="four" {% if sharing == 'four' %}selected{% endif %}>Four Sharing</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="ac-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">AC Preference</label>
+                        <select id="ac-filter" name="ac" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">AC / Non-AC</option>
+                            <option value="ac" {% if ac == 'ac' %}selected{% endif %}>Air Conditioned (AC)</option>
+                            <option value="non_ac" {% if ac == 'non_ac' %}selected{% endif %}>Non-AC</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="min-rent-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Min Rent (₹)</label>
+                        <input id="min-rent-filter"
+                               name="min_rent"
+                               type="number"
+                               min="0"
+                               step="500"
+                               value="{{ min_rent }}"
+                               placeholder="e.g. 2000"
+                               class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label for="max-rent-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Max Rent (₹)</label>
+                        <input id="max-rent-filter"
+                               name="max_rent"
+                               type="number"
+                               min="0"
+                               step="500"
+                               value="{{ max_rent }}"
+                               placeholder="e.g. 8000"
+                               class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                    </div>
+                </div>
+
+                <!-- Row 3: Facilities Quick Toggles, Food, Wi-Fi, Bath, Furnishing, Clear All -->
+                <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200/80 pt-3">
+                    <span class="mr-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Amenities:</span>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if food %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="food" value="1" {% if food %}checked{% endif %} class="hidden">
+                        <span>🍱 Food / Mess</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if wifi %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="wifi" value="1" {% if wifi %}checked{% endif %} class="hidden">
+                        <span>📶 Wi-Fi</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if bathroom == 'attached' %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="bathroom" value="attached" {% if bathroom == 'attached' %}checked{% endif %} class="hidden">
+                        <span>🚿 Attached Bath</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if furnished == 'furnished' %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="furnished" value="furnished" {% if furnished == 'furnished' %}checked{% endif %} class="hidden">
+                        <span>🛋️ Furnished</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if available_only %}border-emerald-700 bg-emerald-700 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-bold transition">
+                        <input type="checkbox" name="available_only" value="1" {% if available_only %}checked{% endif %} class="hidden">
+                        <span>✓ Vacant Beds Only</span>
+                    </label>
+
+                    <!-- Clear All Filters Link / Button -->
+                    <a href="{% url 'properties:list' %}" class="ml-auto inline-flex items-center gap-1 text-xs font-extrabold text-rose-600 hover:text-rose-700 hover:underline">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        Clear All Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <!-- Active Filters Bar -->
+        {% if searched_location or city or stay_type or gender or max_rent or min_rent or sharing or ac or selected_facilities or available_only or move_in %}
+            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                <span class="font-extrabold text-slate-900">Active filters:</span>
+                {% if searched_location %}
+                    <span class="rounded-full bg-brand-100 px-3 py-0.5 font-bold text-brand-900">📍 {{ searched_location.name }} (within {{ radius_km }} km)</span>
+                {% endif %}
+                {% if city %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">City: {{ city }}</span>{% endif %}
+                {% if stay_type_label %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ stay_type_label }}</span>{% endif %}
+                {% if gender_label %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ gender_label }}</span>{% endif %}
+                {% if min_rent %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">From ₹{{ min_rent|intcomma }}</span>{% endif %}
+                {% if max_rent %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">Up to ₹{{ max_rent|intcomma }}/month</span>{% endif %}
+                {% if move_in %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">Move-in {{ move_in }}</span>{% endif %}
+                {% if sharing %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ sharing|title }} Sharing</span>{% endif %}
+                {% if ac %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ ac|upper }}</span>{% endif %}
+                {% if food %}<span class="rounded-full bg-emerald-100 px-2.5 py-0.5 font-semibold text-emerald-800">Food Included</span>{% endif %}
+                {% if wifi %}<span class="rounded-full bg-blue-100 px-2.5 py-0.5 font-semibold text-blue-800">Wi-Fi</span>{% endif %}
+                {% if bathroom %}<span class="rounded-full bg-purple-100 px-2.5 py-0.5 font-semibold text-purple-800">Attached Bath</span>{% endif %}
+                {% if furnished %}<span class="rounded-full bg-amber-100 px-2.5 py-0.5 font-semibold text-amber-800">{{ furnished|title }}</span>{% endif %}
+                {% for fac in selected_facilities %}
+                    <span class="rounded-full bg-brand-50 px-2.5 py-0.5 font-semibold text-brand-800">{{ fac }}</span>
+                {% endfor %}
+                {% if available_only %}<span class="rounded-full bg-emerald-100 px-2.5 py-0.5 font-bold text-emerald-800">Available Beds Only</span>{% endif %}
+                <a href="{% url 'properties:list' %}" class="font-bold text-rose-600 hover:underline ml-1">Reset all filters</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- MAIN CONTENT SECTION: SPLIT MAP & LIST -->
+<section class="bg-slate-50 py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- Results count bar -->
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Accommodation Discovery</p>
+                <h2 class="text-xl font-extrabold text-brand-950 sm:text-2xl">
+                    {{ total_properties_count }} Stays Found
+                    {% if searched_location %}
+                        <span class="text-sm font-semibold text-slate-500">within {{ radius_km }} km of {{ searched_location.name }}</span>
+                    {% endif %}
+                </h2>
+            </div>
+            <p class="text-xs font-semibold text-slate-500">
+                Sorted by: <strong class="text-brand-950">{{ sort_by|title }}</strong>
+            </p>
+        </div>
+
+        <!-- Split Grid Container -->
+        <div class="grid items-start gap-6 lg:grid-cols-12" id="discovery-container">
+            <!-- Left Column: Properties List (lg:col-span-7) -->
+            <div class="space-y-5 lg:col-span-7" id="properties-list-col">
+                {% if properties %}
+                    <div class="grid gap-5 sm:grid-cols-2" id="property-cards-container">
+                        {% for property in properties %}
+                            <article class="property-card group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:shadow-xl hover:border-brand-400 cursor-pointer"
+                                     data-property-id="{{ property.id }}"
+                                     data-lat="{% if property.latitude %}{{ property.latitude }}{% endif %}"
+                                     data-lng="{% if property.longitude %}{{ property.longitude }}{% endif %}">
+                                <!-- Image Card Header -->
+                                <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+                                    <img src="{{ property.primary_image_url|default:'/static/images/rooms/room_single_cozy.jpg' }}"
+                                         alt="{{ property.name }}"
+                                         class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                                         loading="lazy"
+                                         onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+
+                                    <div class="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="rounded-full bg-brand-950/85 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white backdrop-blur">
+                                                {{ property.get_property_type_display }}
+                                            </span>
+                                            <span class="rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-black uppercase text-brand-950 shadow-sm backdrop-blur">
+                                                {{ property.get_gender_preference_display }}
+                                            </span>
+                                        </div>
+
+                                        {% if user.is_authenticated and user.is_student %}
+                                            <form method="post" action="{% url 'properties:favourite' property.slug %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                <button type="submit"
+                                                        class="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:bg-white {% if property.pk in student_favourite_ids %}text-rose-600{% else %}text-slate-700 hover:text-rose-600{% endif %}"
+                                                        title="{% if property.pk in student_favourite_ids %}Remove from saved{% else %}Save to favourites{% endif %}"
+                                                        aria-label="{% if property.pk in student_favourite_ids %}Remove from saved{% else %}Save to favourites{% endif %}">
+                                                    <span class="sr-only">{% if property.pk in student_favourite_ids %}Remove from saved{% else %}Save to favourites{% endif %}</span>
+                                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="{% if property.pk in student_favourite_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Distance pill overlay -->
+                                    <div class="absolute bottom-2.5 left-2.5">
+                                        <span class="inline-flex items-center gap-1 rounded-lg bg-brand-950/90 px-2.5 py-1 text-[11px] font-extrabold text-amber-300 shadow-sm backdrop-blur">
+                                            <svg class="h-3 w-3 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                                            {{ property.distance_text }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Card Body -->
+                                <div class="flex flex-1 flex-col p-4">
+                                    <div class="min-w-0">
+                                        <p class="text-[11px] font-bold uppercase tracking-wider text-accent-600">{{ property.city }}{% if property.locality %} · {{ property.locality }}{% endif %}</p>
+                                        <h3 class="mt-0.5 text-base font-extrabold text-brand-950 group-hover:text-brand-700 truncate">
+                                            <a href="{{ property.get_absolute_url }}">{{ property.name }}</a>
+                                        </h3>
+                                    </div>
+
+                                    <!-- Occupancy Tags -->
+                                    {% if property.room_occupancy_labels %}
+                                        <div class="mt-2.5 flex flex-wrap gap-1">
+                                            {% for occ in property.room_occupancy_labels %}
+                                                <span class="rounded bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-800">{{ occ }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Facilities -->
+                                    {% if property.facilities_list %}
+                                        <div class="mt-2 flex flex-wrap gap-1">
+                                            {% for fac in property.facilities_list|slice:":3" %}
+                                                <span class="facility-tag text-[10px]">{{ fac }}</span>
+                                            {% endfor %}
+                                            {% if property.facilities_list|length > 3 %}
+                                                <span class="text-[10px] text-slate-400 font-semibold self-center">+{{ property.facilities_list|length|add:"-3" }} more</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Rent & CTA -->
+                                    <div class="mt-auto flex items-end justify-between border-t border-slate-100 pt-3 mt-3">
+                                        <div>
+                                            <p class="text-[10px] uppercase font-bold text-slate-400">Monthly Rent</p>
+                                            <p class="text-base font-black text-brand-950">₹{{ property.min_monthly_rent|intcomma }}<span class="text-[10px] font-semibold text-slate-500">/mo</span></p>
+                                        </div>
+                                        <a href="{{ property.get_absolute_url }}" class="btn-accent px-3 py-1.5 text-xs font-extrabold">
+                                            View Details &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination Navigation -->
+                    {% if is_paginated %}
+                        <div class="mt-8 flex items-center justify-between border-t border-slate-200 pt-5">
+                            <div>
+                                <p class="text-xs text-slate-600">
+                                    Showing page <strong class="text-slate-900">{{ page_obj.number }}</strong> of <strong class="text-slate-900">{{ paginator.num_pages }}</strong>
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                {% if page_obj.has_previous %}
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}" class="btn-secondary px-3 py-1.5 text-xs">
+                                        &larr; Previous
+                                    </a>
+                                {% endif %}
+
+                                {% for num in paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-950 text-xs font-extrabold text-white">{{ num }}</span>
+                                    {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                                        <a href="?page={{ num }}{% if pagination_query %}&{{ pagination_query }}{% endif %}" class="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100">
+                                            {{ num }}
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}" class="btn-secondary px-3 py-1.5 text-xs">
+                                        Next &rarr;
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- No Live Properties in this exact filter/radius -->
+                    <div class="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
+                        <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>
+                        </span>
+                        <h2 class="mt-4 text-xl font-bold text-slate-900">Listings are being onboarded</h2>
+                        <h3 class="mt-1 text-sm font-semibold text-slate-700">No stays within {{ radius_km }} km of {{ searched_location.name|default:"this location" }}</h3>
+                        <p class="mt-1 text-xs text-slate-500 max-w-md mx-auto">
+                            Try expanding your search radius to 5 km or 10 km, or clearing specific amenities filters.
+                        </p>
+                        <div class="mt-5 flex flex-wrap justify-center gap-2">
+                            <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}{% if city %}city={{ city|urlencode }}&{% endif %}radius=10.0" class="btn-primary text-xs py-2 px-4">
+                                Expand to 10 km Radius
+                            </a>
+                            <a href="{% url 'properties:list' %}" class="btn-secondary text-xs py-2 px-4">
+                                View All Available Stays
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- SAMPLE / ONBOARDING PROPERTIES (if live listings are few or none) -->
+                {% if not properties and sample_properties %}
+                    <div class="mt-8 border-t border-slate-200 pt-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-base font-extrabold text-brand-950">Listings are being onboarded</h3>
+                                <p class="text-xs text-slate-500">Live verified stays are onboarding in this coaching area. Preview recommended stays.</p>
+                            </div>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            {% for sample in sample_properties|slice:":4" %}
+                                <a href="{% url 'properties:detail' sample.slug %}" class="group flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm hover:border-brand-300 hover:shadow-md transition">
+                                    <img src="{{ sample.image_url }}" alt="{{ sample.name }}" class="h-16 w-20 shrink-0 rounded-xl object-cover">
+                                    <div class="min-w-0 flex-1">
+                                        <span class="text-[10px] font-bold text-accent-600 uppercase">{{ sample.location }}</span>
+                                        <p class="text-xs font-bold text-slate-900 group-hover:text-brand-700 truncate">{{ sample.name }}</p>
+                                        <p class="text-[11px] font-semibold text-emerald-700">₹{{ sample.rent|intcomma }}/mo · {{ sample.distance }}</p>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column: Interactive Leaflet Map (lg:col-span-5) -->
+            <div class="lg:sticky lg:top-24 lg:col-span-5" id="map-column">
+                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
+                    <!-- Map Controls Bar -->
+                    <div class="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                            <span class="text-xs font-extrabold text-brand-950">Interactive Map View</span>
+                        </div>
+                        <span class="text-[11px] font-semibold text-slate-500" id="map-pins-count">Showing verified stays</span>
+                    </div>
+
+                    <!-- Leaflet Container -->
+                    <div id="interactive-search-map" class="h-[580px] w-full bg-slate-100"></div>
+
+                    <!-- Map Legend / Nearby POI summary -->
+                    <div class="border-t border-slate-100 bg-slate-50/80 p-3 text-[11px] text-slate-600">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="flex items-center gap-1 font-semibold">📍 <strong class="text-slate-800">Target Hub</strong></span>
+                            <span class="flex items-center gap-1 font-semibold">🏠 <strong class="text-brand-900">PG / Hostel</strong></span>
+                            <span class="flex items-center gap-1 font-semibold">🎓 <strong class="text-blue-800">Coaching / College</strong></span>
+                            <span class="flex items-center gap-1 font-semibold">🚆 <strong class="text-emerald-800">Railway / Metro</strong></span>
+                            <span class="flex items-center gap-1 font-semibold">🛍️ <strong class="text-amber-800">Market / Mall</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var markersData = {{ map_markers_json|safe }};
+    var searchedLocation = {{ searched_location_json|safe }};
+    var nearbyPois = {{ nearby_pois_json|safe }};
+
+    // Default center: searched destination, or first property, or Central India
+    var centerLat = 25.4358;
+    var centerLng = 81.8463;
+    var defaultZoom = 13;
+
+    if (searchedLocation && searchedLocation.latitude) {
+        centerLat = searchedLocation.latitude;
+        centerLng = searchedLocation.longitude;
+        defaultZoom = 14;
+    } else if (markersData && markersData.length > 0) {
+        centerLat = markersData[0].latitude;
+        centerLng = markersData[0].longitude;
+        defaultZoom = 13;
+    }
+
+    var map = L.map("interactive-search-map").setView([centerLat, centerLng], defaultZoom);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+
+    var leafletMarkers = {};
+    var allBounds = [];
+
+    // 1. Destination Marker (if searched)
+    if (searchedLocation && searchedLocation.latitude) {
+        var destLat = searchedLocation.latitude;
+        var destLng = searchedLocation.longitude;
+        allBounds.push([destLat, destLng]);
+
+        var destIcon = L.divIcon({
+            className: "destination-marker",
+            html: '<div class="destination-pulse" style="background:#ef4444;color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 4px 14px rgba(239,68,68,0.5);font-size:16px;">📍</div>',
+            iconSize: [34, 34],
+            iconAnchor: [17, 17]
+        });
+
+        var destMarker = L.marker([destLat, destLng], { icon: destIcon }).addTo(map)
+            .bindPopup('<div style="font-family:sans-serif;padding:6px;min-width:140px;"><p style="font-size:10px;font-weight:800;text-transform:uppercase;color:#ef4444;margin:0;">Target Destination</p><p style="font-weight:800;font-size:13px;margin:2px 0 0 0;color:#081a33;">' + (searchedLocation.name || 'Searched Location') + '</p></div>');
+
+        // Optional search radius circle
+        var radiusMeters = {{ radius_km|default:"5.0" }} * 1000;
+        L.circle([destLat, destLng], {
+            radius: radiusMeters,
+            color: "#081a33",
+            weight: 1.5,
+            dashArray: "4, 6",
+            fillColor: "#38bdf8",
+            fillOpacity: 0.06
+        }).addTo(map);
+    }
+
+    // 2. Nearby POIs (Coaching centres, stations, colleges, markets)
+    if (nearbyPois && nearbyPois.length) {
+        nearbyPois.forEach(function (poi) {
+            if (poi.latitude && poi.longitude) {
+                var poiIcon = L.divIcon({
+                    className: "poi-marker",
+                    html: '<div style="background:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid #cbd5e1;box-shadow:0 2px 6px rgba(0,0,0,0.2);font-size:12px;">' + (poi.icon || '📍') + '</div>',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                L.marker([poi.latitude, poi.longitude], { icon: poiIcon }).addTo(map)
+                    .bindPopup('<div style="font-family:sans-serif;padding:4px;"><p style="font-weight:700;font-size:12px;margin:0;color:#0f172a;">' + (poi.icon || '') + ' ' + poi.name + '</p><p style="font-size:11px;color:#64748b;margin:2px 0 0 0;">' + poi.category + ' · <strong>' + poi.distance_text + '</strong> from destination</p></div>');
+            }
+        });
+    }
+
+    // 3. Property Markers
+    if (markersData && markersData.length) {
+        markersData.forEach(function (prop) {
+            if (prop.latitude && prop.longitude) {
+                allBounds.push([prop.latitude, prop.longitude]);
+
+                var rentFormatted = "₹" + Number(prop.monthly_rent).toLocaleString("en-IN") + "/mo";
+                var propIcon = L.divIcon({
+                    className: "property-marker",
+                    html: '<div style="background:#081a33;color:white;padding:4px 8px;border-radius:12px;font-weight:800;font-size:11px;border:2px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3);white-space:nowrap;display:flex;align-items:center;gap:3px;transition:all 0.2s;"><span>🏠</span> <span>' + rentFormatted + '</span></div>',
+                    iconSize: [75, 26],
+                    iconAnchor: [37, 13]
+                });
+
+                var popupContent = '<div style="font-family:sans-serif;width:200px;border-radius:1rem;overflow:hidden;">' +
+                    '<img src="' + prop.image_url + '" style="width:100%;height:100px;object-fit:cover;display:block;" onerror="this.src=\'/static/images/rooms/room_single_cozy.jpg\'">' +
+                    '<div style="padding:10px;">' +
+                    '<span style="font-size:10px;font-weight:800;text-transform:uppercase;color:#d97706;">' + prop.property_type_display + '</span>' +
+                    '<p style="font-weight:800;font-size:13px;margin:2px 0 4px 0;color:#081a33;line-height:1.2;">' + prop.name + '</p>' +
+                    '<p style="font-size:11px;color:#64748b;margin:0 0 6px 0;">' + (prop.distance_text ? '📍 ' + prop.distance_text : '') + '</p>' +
+                    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;border-top:1px solid #f1f5f9;padding-top:6px;">' +
+                    '<span style="font-weight:800;font-size:13px;color:#059669;">' + rentFormatted + '</span>' +
+                    '<a href="' + prop.url + '" style="background:#081a33;color:white;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">View &rarr;</a>' +
+                    '</div>' +
+                    '</div></div>';
+
+                var marker = L.marker([prop.latitude, prop.longitude], { icon: propIcon }).addTo(map)
+                    .bindPopup(popupContent);
+
+                leafletMarkers[prop.id] = marker;
+
+                // When user clicks marker, highlight card in the left list
+                marker.on("click", function () {
+                    highlightPropertyCard(prop.id, true);
+                });
+            }
+        });
+
+        // Fit map bounds if multiple markers
+        if (allBounds.length > 1) {
+            map.fitBounds(allBounds, { padding: [40, 40], maxZoom: 15 });
+        }
+    }
+
+    // Interactive List -> Map synchronization
+    var cardElements = document.querySelectorAll("[data-property-id]");
+    cardElements.forEach(function (card) {
+        var propId = card.getAttribute("data-property-id");
+
+        card.addEventListener("mouseenter", function () {
+            if (leafletMarkers[propId]) {
+                var m = leafletMarkers[propId];
+                m.openPopup();
+            }
+        });
+
+        card.addEventListener("click", function (e) {
+            // If user didn't click directly on an inner link
+            if (e.target.tagName !== "A" && e.target.tagName !== "BUTTON") {
+                if (leafletMarkers[propId]) {
+                    var m = leafletMarkers[propId];
+                    map.panTo(m.getLatLng(), { animate: true, duration: 0.6 });
+                    m.openPopup();
+                }
+            }
+        });
+    });
+
+    function highlightPropertyCard(propId, scrollIntoView) {
+        cardElements.forEach(function (c) {
+            c.classList.remove("property-card-active");
+        });
+        var targetCard = document.querySelector('[data-property-id="' + propId + '"]');
+        if (targetCard) {
+            targetCard.classList.add("property-card-active");
+            if (scrollIntoView) {
+                targetCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+        }
+    }
+
+    // View Switcher (Split, List, Full Map)
+    var btnSplit = document.getElementById("btn-view-split");
+    var btnList = document.getElementById("btn-view-list");
+    var btnMap = document.getElementById("btn-view-map");
+    var listCol = document.getElementById("properties-list-col");
+    var mapCol = document.getElementById("map-column");
+    var viewInput = document.getElementById("search-view");
+
+    function setView(mode) {
+        if (mode === "list") {
+            listCol.className = "space-y-5 lg:col-span-12";
+            mapCol.classList.add("hidden");
+            btnList.className = "flex items-center gap-2 rounded-xl bg-white px-3.5 py-1.5 text-xs font-extrabold text-brand-950 shadow-sm transition";
+            btnSplit.className = "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+            if (btnMap) btnMap.className = "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition lg:hidden";
+        } else if (mode === "map") {
+            listCol.classList.add("hidden");
+            mapCol.classList.remove("hidden");
+            mapCol.className = "w-full col-span-12";
+            if (btnMap) btnMap.className = "flex items-center gap-2 rounded-xl bg-white px-3.5 py-1.5 text-xs font-extrabold text-brand-950 shadow-sm transition lg:hidden";
+            btnSplit.className = "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+            btnList.className = "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+            map.invalidateSize();
+        } else { // 'split'
+            listCol.classList.remove("hidden");
+            listCol.className = "space-y-5 lg:col-span-7";
+            mapCol.classList.remove("hidden");
+            mapCol.className = "lg:sticky lg:top-24 lg:col-span-5";
+            btnSplit.className = "flex items-center gap-2 rounded-xl bg-white px-3.5 py-1.5 text-xs font-extrabold text-brand-950 shadow-sm transition";
+            btnList.className = "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+            if (btnMap) btnMap.className = "flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition lg:hidden";
+            map.invalidateSize();
+        }
+        if (viewInput) viewInput.value = mode;
+    }
+
+    if (btnSplit) btnSplit.addEventListener("click", function () { setView("split"); });
+    if (btnList) btnList.addEventListener("click", function () { setView("list"); });
+    if (btnMap) btnMap.addEventListener("click", function () { setView("map"); });
+
+    // Autocomplete Dropdown Search
+    var searchInput = document.getElementById("stay-search-input");
+    var dropdown = document.getElementById("autocomplete-dropdown");
+    var itemsContainer = document.getElementById("autocomplete-items");
+    var clearBtn = document.getElementById("clear-search-btn");
+    var latField = document.getElementById("search-lat");
+    var lngField = document.getElementById("search-lng");
+    var destField = document.getElementById("search-destination");
+    var debounceTimer = null;
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            var val = searchInput.value.trim();
+            if (clearBtn) {
+                clearBtn.classList.toggle("hidden", val.length === 0);
+            }
+            if (val.length < 2) {
+                dropdown.classList.add("hidden");
+                return;
+            }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                fetch("/locations/api/suggest/?q=" + encodeURIComponent(val))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.status === "ok" && data.suggestions && data.suggestions.length > 0) {
+                            itemsContainer.innerHTML = "";
+                            data.suggestions.forEach(function (s) {
+                                var btn = document.createElement("button");
+                                btn.type = "button";
+                                btn.className = "flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-slate-50";
+
+                                var iconChar = s.category === "coaching" ? "📚" : (s.category === "university" ? "🎓" : (s.category === "railway_station" ? "🚆" : "📍"));
+                                btn.innerHTML = '<span style="font-size:16px;">' + iconChar + '</span>' +
+                                    '<div class="min-w-0 flex-1">' +
+                                    '<p class="text-xs font-bold text-slate-900 truncate">' + s.name + '</p>' +
+                                    '<p class="text-[11px] text-slate-500 truncate">' + s.city + ' · ' + (s.category || 'hub') + '</p>' +
+                                    '</div>';
+
+                                btn.addEventListener("click", function () {
+                                    searchInput.value = s.name + ", " + s.city;
+                                    if (latField) latField.value = s.latitude;
+                                    if (lngField) lngField.value = s.longitude;
+                                    if (destField) destField.value = s.name;
+                                    dropdown.classList.add("hidden");
+                                    document.getElementById("search-filter-form").submit();
+                                });
+
+                                itemsContainer.appendChild(btn);
+                            });
+                            dropdown.classList.remove("hidden");
+                        } else {
+                            dropdown.classList.add("hidden");
+                        }
+                    })
+                    .catch(function () {
+                        dropdown.classList.add("hidden");
+                    });
+            }, 250);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (e) {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add("hidden");
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener("click", function () {
+            searchInput.value = "";
+            if (latField) latField.value = "";
+            if (lngField) lngField.value = "";
+            if (destField) destField.value = "";
+            clearBtn.classList.add("hidden");
+            dropdown.classList.add("hidden");
+            searchInput.focus();
+        });
+    }
+});
+</script>
+{% endblock %}

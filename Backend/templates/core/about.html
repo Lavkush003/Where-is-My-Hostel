@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}About | {{ site_name }}{% endblock %}
+{% block meta_description %}Learn how Where Is My Hostel helps students across India discover PGs, hostels and rental rooms near colleges and coaching institutes.{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-amber-50 py-16 sm:py-20">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <p class="text-sm font-semibold uppercase tracking-wider text-brand-700">About the project</p>
+        <h1 class="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">Student housing should be easier to find.</h1>
+        <p class="mt-5 text-lg leading-8 text-slate-600">
+            Where Is My Hostel is being built to help students across India discover safe and affordable PGs, hostels,
+            private rooms and rental accommodation close to the places they spend their time.
+        </p>
+    </div>
+</section>
+
+<section class="bg-white py-16 sm:py-20">
+    <div class="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <div>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">The problem we are solving</h2>
+            <p class="mt-4 text-base leading-7 text-slate-600">
+                Moving to a new city for a course or an exam batch often means piecing together information from
+                messaging groups, notice boards and word of mouth. Students need a clearer way to compare options and
+                understand what is actually nearby.
+            </p>
+            <p class="mt-4 text-base leading-7 text-slate-600">
+                Our focus is location-first discovery. Instead of browsing an endless list, students will be able to
+                search around coaching institutes, colleges, markets, railway stations and other important landmarks.
+            </p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8">
+            <h2 class="text-lg font-semibold text-slate-900">What the platform will include</h2>
+            <ul class="mt-5 space-y-4">
+                <li class="flex gap-3">
+                    <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                        </svg>
+                    </span>
+                    <span class="text-sm leading-6 text-slate-600">Verified PG, hostel and room listings</span>
+                </li>
+                <li class="flex gap-3">
+                    <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                        </svg>
+                    </span>
+                    <span class="text-sm leading-6 text-slate-600">Nearby landmark information with OpenStreetMap</span>
+                </li>
+                <li class="flex gap-3">
+                    <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                        </svg>
+                    </span>
+                    <span class="text-sm leading-6 text-slate-600">Direct enquiries between students and owners</span>
+                </li>
+                <li class="flex gap-3">
+                    <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                        </svg>
+                    </span>
+                    <span class="text-sm leading-6 text-slate-600">Owner tools for managing properties and responses</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="border-t border-slate-200 bg-slate-50 py-16 sm:py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="max-w-2xl">
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">How the foundation is built</h2>
+            <p class="mt-4 text-base leading-7 text-slate-600">
+                The project uses a modular Django backend, server-rendered templates and a maintainable Tailwind CSS
+                build. Maps and location services are planned around Leaflet, OpenStreetMap, Nominatim and Overpass.
+            </p>
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-xl border border-slate-200 bg-white p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Backend</p>
+                <p class="mt-2 text-base font-semibold text-slate-900">Django</p>
+                <p class="mt-1 text-sm text-slate-600">Modular apps and Django ORM.</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Database</p>
+                <p class="mt-2 text-base font-semibold text-slate-900">PostgreSQL</p>
+                <p class="mt-1 text-sm text-slate-600">SQLite fallback for local setup.</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Frontend</p>
+                <p class="mt-2 text-base font-semibold text-slate-900">Tailwind CSS</p>
+                <p class="mt-1 text-sm text-slate-600">Compiled utility styles and vanilla JS.</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Maps</p>
+                <p class="mt-2 text-base font-semibold text-slate-900">Leaflet + OSM</p>
+                <p class="mt-1 text-sm text-slate-600">Open location data and nearby search.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,1032 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Explore Verified PGs & Student Accommodations | {{ site_name }}{% endblock %}
+{% block meta_description %}Dedicated PG accommodation discovery across India. Search verified Boys PGs, Girls PGs and Co-living spaces near coaching hubs, colleges and metro stations.{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    .leaflet-popup-content-wrapper { border-radius: 1.25rem; box-shadow: 0 15px 30px -5px rgba(0,0,0,0.18); padding: 0; overflow: hidden; }
+    .leaflet-popup-content { margin: 0; line-height: 1.4; }
+    .property-card-active { ring: 2px solid #081a33; border-color: #f59e0b !important; transform: translateY(-2px); }
+    .destination-pulse {
+        animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .filter-chip-active {
+        background-color: #081a33 !important;
+        color: #ffffff !important;
+        border-color: #081a33 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 1. Dedicated PG Explore Hero Banner -->
+<section class="border-b border-slate-200 bg-slate-900 py-10 text-white sm:py-14">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div class="max-w-3xl">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-accent-500/10 px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider text-accent-300 backdrop-blur">
+                        <span class="h-2 w-2 rounded-full bg-accent-400 animate-pulse"></span>
+                        Dedicated PG Discovery
+                    </span>
+                    <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+                        Zero Brokerage · Verified Owners
+                    </span>
+                </div>
+                <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                    Explore Verified <span class="text-accent-400">PGs & Hostels</span> Across India
+                </h1>
+                <p class="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
+                    Find student-friendly PGs and accommodations with meals, Wi-Fi, air conditioning, and attached bathrooms, measured with exact distance from your destination.
+                </p>
+            </div>
+
+            <!-- Fast Category Pills -->
+            <div class="flex flex-wrap gap-2 text-xs font-bold">
+                <a href="{% url 'properties:explore_pgs' %}?type=pg" class="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-white transition hover:bg-white/20">
+                    All PGs
+                </a>
+                <a href="{% url 'properties:explore_pgs' %}?type=pg&gender=boys" class="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-white transition hover:bg-white/20">
+                    Boys PG
+                </a>
+                <a href="{% url 'properties:explore_pgs' %}?type=pg&gender=girls" class="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-white transition hover:bg-white/20">
+                    Girls PG
+                </a>
+                <a href="{% url 'properties:explore_pgs' %}?type=coliving" class="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-white transition hover:bg-white/20">
+                    Co-living Stays
+                </a>
+                <a href="{% url 'properties:explore_pgs' %}?type=independent_room" class="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-white transition hover:bg-white/20">
+                    Private Rooms
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2. Main Explore Workspace (Filters + Split View Map & List) -->
+<section class="border-b border-slate-200 bg-white py-8 sm:py-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- Control Header: Results count & View Mode Switcher -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-xs font-extrabold uppercase tracking-wider text-slate-500">Live accommodation search</p>
+                <div class="mt-1 flex items-baseline gap-2">
+                    <span id="results-count-text" class="text-2xl font-extrabold tracking-tight text-slate-900">
+                        Showing {{ total_properties_count }} verified stay{{ total_properties_count|pluralize }}
+                    </span>
+                    <span id="loading-spinner" class="hidden text-brand-600 animate-spin">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle><path class="opacity-90" fill="currentColor" d="M21 12a9 9 0 0 1-9 9v-3a6 6 0 0 0 6-6h3Z"></path></svg>
+                    </span>
+                </div>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div class="flex items-center gap-1 rounded-2xl bg-slate-100 p-1.5 shadow-inner">
+                <button type="button" id="btn-view-split" class="flex items-center gap-2 rounded-xl bg-white px-3.5 py-1.5 text-xs font-extrabold text-brand-950 shadow-sm transition">
+                    <svg class="h-4 w-4 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.5 0h15a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H4.5A1.5 1.5 0 0 0 3 6v12a1.5 1.5 0 0 0 1.5 1.5Z"/></svg>
+                    Split Map & List
+                </button>
+                <button type="button" id="btn-view-list" class="flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                    List Only
+                </button>
+                <button type="button" id="btn-view-map" class="flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition lg:hidden">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
+                    Full Map
+                </button>
+            </div>
+        </div>
+
+        <!-- SEARCH & ADVANCED FILTER FORM -->
+        <form method="get" action="{% url 'properties:explore_pgs' %}" id="search-filter-form" class="mt-6" role="search">
+            <!-- Hidden inputs preserving geocoded lat/lng and view -->
+            <input type="hidden" name="lat" id="search-lat" value="{% if target_lat %}{{ target_lat }}{% endif %}">
+            <input type="hidden" name="lng" id="search-lng" value="{% if target_lng %}{{ target_lng }}{% endif %}">
+            <input type="hidden" name="destination" id="search-destination" value="{{ destination }}">
+            <input type="hidden" name="view" id="search-view" value="{{ view_mode }}">
+            <input type="hidden" name="page" id="search-page" value="{{ page_obj.number }}">
+
+            <div class="rounded-3xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm backdrop-blur sm:p-5">
+                <!-- Row 1: Search Landmark / Institute + City + Radius + Sort -->
+                <div class="grid gap-3 lg:grid-cols-12">
+                    <!-- Location / Landmark Input with Autocomplete (lg:col-span-5) -->
+                    <div class="relative lg:col-span-5">
+                        <label for="stay-search-input" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                            Search Destination / Coaching / College / Station
+                        </label>
+                        <div class="relative">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-brand-600">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                            </span>
+                            <input id="stay-search-input"
+                                   name="q"
+                                   type="search"
+                                   autocomplete="off"
+                                   value="{% if destination %}{{ destination }}{% elif query %}{{ query }}{% endif %}"
+                                   placeholder="e.g. Allen Kota, Civil Lines Prayagraj, Mukherjee Nagar..."
+                                   class="w-full rounded-2xl border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200"
+                                   aria-autocomplete="list"
+                                   aria-expanded="false">
+                            <button type="button" id="clear-search-btn" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 {% if not query and not destination %}hidden{% endif %}">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- Instant Autocomplete Dropdown List -->
+                        <div id="autocomplete-dropdown" class="absolute left-0 right-0 top-full z-50 mt-2 hidden max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/15">
+                            <p class="px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Popular Institutes & Hubs</p>
+                            <div id="autocomplete-items" class="divide-y divide-slate-100"></div>
+                        </div>
+                    </div>
+
+                    <!-- City Selector (lg:col-span-2) -->
+                    <div class="lg:col-span-2">
+                        <label for="city-select" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">City</label>
+                        <select id="city-select" name="city" class="w-full rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200">
+                            <option value="">All Indian Cities</option>
+                            {% for c in available_cities %}
+                                <option value="{{ c }}" {% if city|lower == c|lower %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Distance Radius Selector (lg:col-span-2) -->
+                    <div class="lg:col-span-2">
+                        <label for="radius-select" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">Distance Radius</label>
+                        <select id="radius-select" name="radius" class="w-full rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200">
+                            <option value="0.5" {% if radius_km == 0.5 %}selected{% endif %}>Within 500 metres</option>
+                            <option value="1.0" {% if radius_km == 1.0 %}selected{% endif %}>Within 1 kilometre</option>
+                            <option value="2.0" {% if radius_km == 2.0 %}selected{% endif %}>Within 2 kilometres</option>
+                            <option value="3.0" {% if radius_km == 3.0 %}selected{% endif %}>Within 3 kilometres</option>
+                            <option value="5.0" {% if radius_km == 5.0 %}selected{% endif %}>Within 5 kilometres</option>
+                            <option value="10.0" {% if radius_km == 10.0 %}selected{% endif %}>Within 10 kilometres</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By (lg:col-span-2) -->
+                    <div class="lg:col-span-2">
+                        <label for="sort-select" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-slate-600">Sort By</label>
+                        <select id="sort-select" name="sort" class="w-full rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-200">
+                            <option value="nearest" {% if sort_by == 'nearest' %}selected{% endif %}>Nearest First</option>
+                            <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+                            <option value="rent_asc" {% if sort_by == 'rent_asc' %}selected{% endif %}>Lowest Rent</option>
+                            <option value="rent_desc" {% if sort_by == 'rent_desc' %}selected{% endif %}>Highest Rent</option>
+                            <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Recently Added</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Submit Button (lg:col-span-1) -->
+                    <div class="flex items-end lg:col-span-1">
+                        <button type="submit" class="btn-primary w-full justify-center rounded-2xl py-2.5 shadow-md">
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Row 2: Secondary Advanced Filters -->
+                <div class="mt-4 grid gap-3 border-t border-slate-200 pt-3 sm:grid-cols-2 lg:grid-cols-6">
+                    <div>
+                        <label for="type-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Category</label>
+                        <select id="type-filter" name="type" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">All Categories</option>
+                            <option value="pg" {% if stay_type == 'pg' %}selected{% endif %}>PG Accommodation</option>
+                            <option value="coliving" {% if stay_type == 'coliving' %}selected{% endif %}>Co-living Space</option>
+                            <option value="student_hostel" {% if stay_type == 'student_hostel' %}selected{% endif %}>Student Hostel</option>
+                            <option value="private_hostel" {% if stay_type == 'private_hostel' %}selected{% endif %}>Private Hostel</option>
+                            <option value="independent_room" {% if stay_type == 'independent_room' %}selected{% endif %}>Independent Room</option>
+                            <option value="shared_room" {% if stay_type == 'shared_room' %}selected{% endif %}>Shared Rental Room</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="gender-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Gender</label>
+                        <select id="gender-filter" name="gender" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">All Genders</option>
+                            <option value="boys" {% if gender == 'boys' %}selected{% endif %}>Boys Only</option>
+                            <option value="girls" {% if gender == 'girls' %}selected{% endif %}>Girls Only</option>
+                            <option value="unisex" {% if gender == 'unisex' %}selected{% endif %}>Unisex / All</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="sharing-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Occupancy</label>
+                        <select id="sharing-filter" name="sharing" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">Any Occupancy</option>
+                            <option value="single" {% if sharing == 'single' %}selected{% endif %}>Single Occupancy</option>
+                            <option value="double" {% if sharing == 'double' %}selected{% endif %}>Double Sharing</option>
+                            <option value="triple" {% if sharing == 'triple' %}selected{% endif %}>Triple Sharing</option>
+                            <option value="four" {% if sharing == 'four' %}selected{% endif %}>Four Sharing</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="min-rent-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Min Rent (₹)</label>
+                        <input id="min-rent-filter"
+                               name="min_rent"
+                               type="number"
+                               min="0"
+                               step="500"
+                               value="{{ min_rent }}"
+                               placeholder="e.g. 2000"
+                               class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label for="max-rent-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Max Rent (₹)</label>
+                        <input id="max-rent-filter"
+                               name="max_rent"
+                               type="number"
+                               min="0"
+                               step="500"
+                               value="{{ max_rent }}"
+                               placeholder="e.g. 8000"
+                               class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label for="furnished-filter" class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Furnishing</label>
+                        <select id="furnished-filter" name="furnished" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm">
+                            <option value="">Any Furnishing</option>
+                            <option value="furnished" {% if furnished == 'furnished' %}selected{% endif %}>Furnished</option>
+                            <option value="unfurnished" {% if furnished == 'unfurnished' %}selected{% endif %}>Unfurnished</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Row 3: Amenity Toggles (Food, Wi-Fi, Attached Bath, AC, Vacant beds) -->
+                <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200/80 pt-3">
+                    <span class="mr-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Amenities:</span>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if food %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="food" value="1" id="food-toggle" {% if food %}checked{% endif %} class="hidden filter-auto-trigger">
+                        <span>🍱 Food / Mess</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if wifi %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="wifi" value="1" id="wifi-toggle" {% if wifi %}checked{% endif %} class="hidden filter-auto-trigger">
+                        <span>📶 High-Speed Wi-Fi</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if bathroom == 'attached' %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="bathroom" value="attached" id="bathroom-toggle" {% if bathroom == 'attached' %}checked{% endif %} class="hidden filter-auto-trigger">
+                        <span>🚿 Attached Bathroom</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if ac == 'ac' %}border-brand-800 bg-brand-900 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-semibold transition">
+                        <input type="checkbox" name="ac" value="ac" id="ac-toggle" {% if ac == 'ac' %}checked{% endif %} class="hidden filter-auto-trigger">
+                        <span>❄️ Air Conditioned (AC)</span>
+                    </label>
+
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border {% if available_only %}border-emerald-700 bg-emerald-700 text-white{% else %}border-slate-200 bg-white text-slate-700 hover:bg-slate-100{% endif %} px-2.5 py-1 text-xs font-bold transition">
+                        <input type="checkbox" name="available_only" value="1" id="available-only-toggle" {% if available_only %}checked{% endif %} class="hidden filter-auto-trigger">
+                        <span>✓ Vacant Beds Only</span>
+                    </label>
+
+                    <!-- Clear All Filters Button -->
+                    <button type="button" id="clear-all-filters-btn" class="ml-auto inline-flex items-center gap-1 text-xs font-extrabold text-rose-600 hover:text-rose-700 hover:underline">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        Clear All Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Active Filters Bar -->
+        <div id="active-filters-bar" class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600 {% if not active_filters_count and not searched_location %}hidden{% endif %}">
+            <span class="font-extrabold text-slate-900">Active filters:</span>
+            <div id="active-filter-chips" class="flex flex-wrap items-center gap-1.5">
+                {% if searched_location %}
+                    <span class="rounded-full bg-brand-100 px-3 py-0.5 font-bold text-brand-900">📍 {{ searched_location.name }} (within {{ radius_km }} km)</span>
+                {% endif %}
+                {% if city %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">City: {{ city }}</span>{% endif %}
+                {% if stay_type_label %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ stay_type_label }}</span>{% endif %}
+                {% if gender_label %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ gender_label }}</span>{% endif %}
+                {% if min_rent %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">From ₹{{ min_rent|intcomma }}</span>{% endif %}
+                {% if max_rent %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">Up to ₹{{ max_rent|intcomma }}/month</span>{% endif %}
+                {% if sharing %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ sharing|title }} Sharing</span>{% endif %}
+                {% if ac %}<span class="rounded-full bg-slate-200 px-2.5 py-0.5 font-semibold text-slate-800">{{ ac|upper }}</span>{% endif %}
+                {% if food %}<span class="rounded-full bg-emerald-100 px-2.5 py-0.5 font-semibold text-emerald-800">Food Included</span>{% endif %}
+                {% if wifi %}<span class="rounded-full bg-blue-100 px-2.5 py-0.5 font-semibold text-blue-800">Wi-Fi</span>{% endif %}
+                {% if bathroom %}<span class="rounded-full bg-purple-100 px-2.5 py-0.5 font-semibold text-purple-800">Attached Bath</span>{% endif %}
+                {% if furnished %}<span class="rounded-full bg-amber-100 px-2.5 py-0.5 font-semibold text-amber-800">{{ furnished|title }}</span>{% endif %}
+                {% if available_only %}<span class="rounded-full bg-emerald-100 px-2.5 py-0.5 font-semibold text-emerald-800">Vacant Beds Only</span>{% endif %}
+            </div>
+        </div>
+
+        <!-- 3. SPLIT WORKSPACE: Properties List + Leaflet Map -->
+        <div class="mt-8 grid gap-8 lg:grid-cols-12" id="results-split-workspace">
+            <!-- Left Column: Properties Grid & Pagination (lg:col-span-7) -->
+            <div class="lg:col-span-7" id="list-column">
+                <div id="properties-container" class="relative">
+                    <!-- Properties Grid -->
+                    <div id="properties-grid" class="grid gap-6 sm:grid-cols-2">
+                        {% for property in properties %}
+                            <article class="property-card group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-xl"
+                                     data-property-id="{{ property.id }}"
+                                     data-lat="{{ property.latitude }}"
+                                     data-lng="{{ property.longitude }}">
+                                <!-- Property Image & Badges -->
+                                <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+                                    <img src="{{ property.primary_image_url|default:'/static/images/rooms/room_single_cozy.jpg' }}"
+                                         alt="{{ property.name }}"
+                                         class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                                         loading="lazy"
+                                         onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+
+                                    <div class="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+                                        <span class="rounded-full bg-brand-950/85 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white backdrop-blur">
+                                            {{ property.get_property_type_display }}
+                                        </span>
+
+                                        <div class="flex items-center gap-2">
+                                            {% if property.total_available_beds > 0 %}
+                                                <span class="rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm backdrop-blur">
+                                                    {{ property.total_available_beds }} bed{{ property.total_available_beds|pluralize }} vacant
+                                                </span>
+                                            {% else %}
+                                                <span class="rounded-full bg-slate-800/80 px-2.5 py-0.5 text-[10px] font-semibold text-slate-200 backdrop-blur">
+                                                    Waitlist
+                                                </span>
+                                            {% endif %}
+
+                                            {% if user.is_authenticated and user.is_student %}
+                                                <form method="post" action="{% url 'properties:favourite' property.slug %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            class="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md backdrop-blur transition hover:bg-white hover:text-rose-600 focus:outline-none"
+                                                            title="{% if property.id in student_favourite_ids %}Remove from saved{% else %}Save stay{% endif %}">
+                                                        <svg class="h-4 w-4 {% if property.id in student_favourite_ids %}fill-rose-500 text-rose-500{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Bottom Gradient distance text -->
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent p-3 pt-6">
+                                        <p class="text-xs font-bold text-white flex items-center gap-1.5">
+                                            <span>📍</span>
+                                            <span class="truncate">
+                                                {% if property.distance_text %}
+                                                    {{ property.distance_text }}
+                                                {% else %}
+                                                    {{ property.locality|default:property.city }}
+                                                {% endif %}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Card Content -->
+                                <div class="flex flex-1 flex-col p-4">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div>
+                                            <span class="text-[10px] font-bold uppercase tracking-wider text-accent-600">
+                                                {{ property.city }} · {{ property.get_gender_preference_display }}
+                                            </span>
+                                            <h3 class="text-base font-extrabold text-slate-900 group-hover:text-brand-700 transition">
+                                                <a href="{{ property.get_absolute_url }}">{{ property.name }}</a>
+                                            </h3>
+                                        </div>
+                                    </div>
+
+                                    <p class="mt-1 line-clamp-2 text-xs text-slate-500 leading-relaxed">
+                                        {{ property.address }}
+                                    </p>
+
+                                    <!-- Facilities chips -->
+                                    <div class="mt-3 flex flex-wrap gap-1">
+                                        {% for fac in property.facilities_list|slice:":4" %}
+                                            <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                                {{ fac }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+
+                                    <!-- Pricing & CTA -->
+                                    <div class="mt-auto pt-4 border-t border-slate-100 flex items-end justify-between">
+                                        <div>
+                                            <p class="text-xs text-slate-500">Starting from</p>
+                                            <p class="text-lg font-black text-brand-950">
+                                                ₹{{ property.min_monthly_rent|intcomma }}<span class="text-xs font-semibold text-slate-500">/mo</span>
+                                            </p>
+                                        </div>
+                                        <a href="{{ property.get_absolute_url }}" class="btn-primary px-3.5 py-1.5 text-xs font-bold">
+                                            View Details &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Dynamic Empty State -->
+                    <div id="empty-state-container" class="{% if properties %}hidden{% endif %} rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
+                        <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                            <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>
+                        </span>
+                        <h2 class="mt-4 text-xl font-bold text-slate-900">Listings are being onboarded</h2>
+                        <h3 class="mt-1 text-sm font-semibold text-slate-700">No PGs match your selected filter criteria</h3>
+                        <p class="mt-1 text-xs text-slate-500 max-w-md mx-auto">
+                            Try expanding your search radius to 5 km or 10 km, adjusting rent bounds, or clearing specific amenities.
+                        </p>
+                        <div class="mt-5 flex flex-wrap justify-center gap-2">
+                            <button type="button" onclick="resetAllFilters()" class="btn-primary text-xs py-2 px-5">
+                                Reset All Filters
+                            </button>
+                            <a href="{% url 'properties:explore_pgs' %}?type=pg" class="btn-secondary text-xs py-2 px-4">
+                                View All PGs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination Container -->
+                <div id="pagination-container" class="mt-8 border-t border-slate-200 pt-6 {% if not is_paginated %}hidden{% endif %}">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p class="text-xs text-slate-500" id="pagination-info">
+                            Showing page <strong class="text-slate-900">{{ page_obj.number }}</strong> of <strong class="text-slate-900">{{ paginator.num_pages }}</strong>
+                        </p>
+                        <div class="flex items-center gap-1.5" id="pagination-links">
+                            {% if page_obj.has_previous %}
+                                <button type="button" onclick="goToPage({{ page_obj.previous_page_number }})" class="btn-secondary px-3 py-1.5 text-xs">
+                                    &larr; Previous
+                                </button>
+                            {% endif %}
+                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-950 text-xs font-extrabold text-white">
+                                {{ page_obj.number }}
+                            </span>
+                            {% if page_obj.has_next %}
+                                <button type="button" onclick="goToPage({{ page_obj.next_page_number }})" class="btn-secondary px-3 py-1.5 text-xs">
+                                    Next &rarr;
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Interactive Leaflet Map (lg:col-span-5) -->
+            <div class="lg:sticky lg:top-24 lg:col-span-5" id="map-column">
+                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
+                    <!-- Map Controls Bar -->
+                    <div class="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                            <span class="text-xs font-extrabold text-brand-950">Interactive Map View</span>
+                        </div>
+                        <span class="text-[11px] font-semibold text-slate-500" id="map-pins-count">Real-time coordinates</span>
+                    </div>
+
+                    <!-- Leaflet Map Canvas -->
+                    <div id="interactive-search-map" class="h-[580px] w-full bg-slate-100"></div>
+
+                    <!-- Legend -->
+                    <div class="border-t border-slate-100 bg-slate-50/80 p-3 text-[11px] text-slate-600">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="flex items-center gap-1 font-semibold">📍 <strong class="text-slate-800">Destination</strong></span>
+                            <span class="flex items-center gap-1 font-semibold">🏠 <strong class="text-brand-900">Verified PG</strong></span>
+                            <span class="flex items-center gap-1 font-semibold">🎓 <strong class="text-blue-800">Coaching / College</strong></span>
+                            <span class="flex items-center gap-1 font-semibold">🚆 <strong class="text-emerald-800">Station / Transit</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+var map;
+var markerLayerGroup;
+var destLayerGroup;
+var poiLayerGroup;
+var radiusCircle;
+
+var initialMarkersData = {{ map_markers_json|safe }};
+var initialSearchedLocation = {{ searched_location_json|safe }};
+var initialNearbyPois = {{ nearby_pois_json|safe }};
+
+document.addEventListener("DOMContentLoaded", function () {
+    initMap(initialMarkersData, initialSearchedLocation, initialNearbyPois);
+    initLiveFilterEngine();
+    initAutocomplete();
+    initViewModes();
+});
+
+function initMap(markersData, searchedLocation, nearbyPois) {
+    var centerLat = 25.4358;
+    var centerLng = 81.8463;
+    var defaultZoom = 13;
+
+    if (searchedLocation && searchedLocation.latitude) {
+        centerLat = searchedLocation.latitude;
+        centerLng = searchedLocation.longitude;
+        defaultZoom = 14;
+    } else if (markersData && markersData.length > 0) {
+        centerLat = markersData[0].latitude;
+        centerLng = markersData[0].longitude;
+        defaultZoom = 13;
+    }
+
+    map = L.map("interactive-search-map").setView([centerLat, centerLng], defaultZoom);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+
+    markerLayerGroup = L.layerGroup().addTo(map);
+    destLayerGroup = L.layerGroup().addTo(map);
+    poiLayerGroup = L.layerGroup().addTo(map);
+
+    renderMapData(markersData, searchedLocation, nearbyPois);
+}
+
+function renderMapData(markersData, searchedLocation, nearbyPois) {
+    markerLayerGroup.clearLayers();
+    destLayerGroup.clearLayers();
+    poiLayerGroup.clearLayers();
+    if (radiusCircle) { map.removeLayer(radiusCircle); }
+
+    var allBounds = [];
+
+    // 1. Destination Marker
+    if (searchedLocation && searchedLocation.latitude) {
+        var destLat = searchedLocation.latitude;
+        var destLng = searchedLocation.longitude;
+        allBounds.push([destLat, destLng]);
+
+        var destIcon = L.divIcon({
+            className: "destination-marker",
+            html: '<div class="destination-pulse" style="background:#ef4444;color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 4px 14px rgba(239,68,68,0.5);font-size:16px;">📍</div>',
+            iconSize: [34, 34],
+            iconAnchor: [17, 17]
+        });
+
+        L.marker([destLat, destLng], { icon: destIcon }).addTo(destLayerGroup)
+            .bindPopup('<div style="font-family:sans-serif;padding:6px;min-width:140px;"><p style="font-size:10px;font-weight:800;text-transform:uppercase;color:#ef4444;margin:0;">Target Destination</p><p style="font-weight:800;font-size:13px;margin:2px 0 0 0;color:#081a33;">' + (searchedLocation.name || 'Searched Location') + '</p></div>');
+
+        var radiusSelect = document.getElementById("radius-select");
+        var radiusMeters = (radiusSelect ? parseFloat(radiusSelect.value) : 5.0) * 1000;
+        radiusCircle = L.circle([destLat, destLng], {
+            radius: radiusMeters,
+            color: "#081a33",
+            weight: 1.5,
+            dashArray: "4, 6",
+            fillColor: "#38bdf8",
+            fillOpacity: 0.06
+        }).addTo(map);
+    }
+
+    // 2. Nearby POIs
+    if (nearbyPois && nearbyPois.length) {
+        nearbyPois.forEach(function (poi) {
+            if (poi.latitude && poi.longitude) {
+                var poiIcon = L.divIcon({
+                    className: "poi-marker",
+                    html: '<div style="background:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid #cbd5e1;box-shadow:0 2px 6px rgba(0,0,0,0.2);font-size:12px;">' + (poi.icon || '📍') + '</div>',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                L.marker([poi.latitude, poi.longitude], { icon: poiIcon }).addTo(poiLayerGroup)
+                    .bindPopup('<div style="font-family:sans-serif;padding:4px;"><p style="font-weight:700;font-size:12px;margin:0;color:#0f172a;">' + (poi.icon || '') + ' ' + poi.name + '</p><p style="font-size:11px;color:#64748b;margin:2px 0 0 0;">' + poi.category + ' · <strong>' + (poi.distance_text || '') + '</strong></p></div>');
+            }
+        });
+    }
+
+    // 3. Property Markers
+    if (markersData && markersData.length) {
+        markersData.forEach(function (prop) {
+            if (prop.latitude && prop.longitude) {
+                allBounds.push([prop.latitude, prop.longitude]);
+                var rentFormatted = "₹" + Number(prop.monthly_rent).toLocaleString("en-IN") + "/mo";
+                var propIcon = L.divIcon({
+                    className: "property-marker",
+                    html: '<div style="background:#081a33;color:white;padding:4px 8px;border-radius:12px;font-weight:800;font-size:11px;border:2px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3);white-space:nowrap;display:flex;align-items:center;gap:3px;transition:all 0.2s;"><span>🏠</span> <span>' + rentFormatted + '</span></div>',
+                    iconSize: [75, 26],
+                    iconAnchor: [37, 13]
+                });
+
+                var popupContent = '<div style="font-family:sans-serif;width:210px;overflow:hidden;border-radius:12px;">' +
+                    '<img src="' + prop.image_url + '" style="width:100%;height:105px;object-fit:cover;display:block;" onerror="this.src=\'/static/images/rooms/room_single_cozy.jpg\';">' +
+                    '<div style="padding:10px;">' +
+                    '<p style="margin:0;font-size:10px;font-weight:800;text-transform:uppercase;color:#d97706;">' + prop.property_type_display + ' · ' + (prop.gender_preference || 'Unisex') + '</p>' +
+                    '<p style="margin:2px 0 4px 0;font-size:13px;font-weight:800;color:#0f172a;line-height:1.2;">' + prop.name + '</p>' +
+                    '<p style="margin:0 0 8px 0;font-size:11px;color:#64748b;">📍 ' + (prop.distance_text || 'Walking distance') + '</p>' +
+                    '<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f1f5f9;padding-top:6px;">' +
+                    '<span style="font-weight:900;font-size:13px;color:#081a33;">' + rentFormatted + '</span>' +
+                    '<a href="' + prop.url + '" style="background:#081a33;color:white;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">View &rarr;</a>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+
+                var marker = L.marker([prop.latitude, prop.longitude], { icon: propIcon }).addTo(markerLayerGroup)
+                    .bindPopup(popupContent);
+
+                marker.on("click", function () {
+                    highlightPropertyCard(prop.id);
+                });
+            }
+        });
+    }
+
+    if (allBounds.length > 0) {
+        map.fitBounds(allBounds, { padding: [35, 35], maxZoom: 15 });
+    }
+}
+
+function highlightPropertyCard(propId) {
+    document.querySelectorAll(".property-card").forEach(function (card) {
+        card.classList.remove("property-card-active");
+    });
+    var targetCard = document.querySelector('[data-property-id="' + propId + '"]');
+    if (targetCard) {
+        targetCard.classList.add("property-card-active");
+        targetCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+}
+
+// ----------------- AJAX LIVE FILTER ENGINE -----------------
+var filterDebounceTimer;
+
+function initLiveFilterEngine() {
+    var form = document.getElementById("search-filter-form");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        performLiveFilter(1, true);
+    });
+
+    // Auto-trigger on dropdown / checkbox change
+    var autoInputs = form.querySelectorAll("select, input[type='checkbox']");
+    autoInputs.forEach(function (input) {
+        input.addEventListener("change", function () {
+            // Update chip styles for checkboxes
+            if (input.type === "checkbox") {
+                var label = input.closest("label");
+                if (label) {
+                    if (input.checked) {
+                        label.classList.add("border-brand-800", "bg-brand-900", "text-white");
+                        label.classList.remove("border-slate-200", "bg-white", "text-slate-700");
+                    } else {
+                        label.classList.remove("border-brand-800", "bg-brand-900", "text-white");
+                        label.classList.add("border-slate-200", "bg-white", "text-slate-700");
+                    }
+                }
+            }
+            performLiveFilter(1, true);
+        });
+    });
+
+    // Debounced trigger on min/max rent input
+    var rentInputs = form.querySelectorAll("#min-rent-filter, #max-rent-filter");
+    rentInputs.forEach(function (input) {
+        input.addEventListener("input", function () {
+            clearTimeout(filterDebounceTimer);
+            filterDebounceTimer = setTimeout(function () {
+                performLiveFilter(1, true);
+            }, 450);
+        });
+    });
+
+    // Clear search button
+    var clearSearchBtn = document.getElementById("clear-search-btn");
+    var searchInput = document.getElementById("stay-search-input");
+    if (clearSearchBtn && searchInput) {
+        clearSearchBtn.addEventListener("click", function () {
+            searchInput.value = "";
+            document.getElementById("search-lat").value = "";
+            document.getElementById("search-lng").value = "";
+            document.getElementById("search-destination").value = "";
+            clearSearchBtn.classList.add("hidden");
+            performLiveFilter(1, true);
+        });
+    }
+
+    // Clear all filters button
+    var clearAllBtn = document.getElementById("clear-all-filters-btn");
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener("click", function () {
+            resetAllFilters();
+        });
+    }
+
+    // Handle browser back/forward buttons
+    window.addEventListener("popstate", function () {
+        performLiveFilter(1, false);
+    });
+}
+
+function performLiveFilter(page, updateUrl) {
+    var form = document.getElementById("search-filter-form");
+    if (!form) return;
+
+    var formData = new FormData(form);
+    var params = new URLSearchParams();
+
+    formData.forEach(function (value, key) {
+        if (value && key !== "csrfmiddlewaretoken") {
+            params.append(key, value);
+        }
+    });
+
+    if (page) {
+        params.set("page", page);
+    }
+
+    // Maintain URL state
+    if (updateUrl) {
+        var newUrl = window.location.pathname + "?" + params.toString();
+        window.history.pushState({}, "", newUrl);
+    }
+
+    // Loading indicator
+    var spinner = document.getElementById("loading-spinner");
+    if (spinner) spinner.classList.remove("hidden");
+
+    fetch("{% url 'properties:api_search' %}?" + params.toString(), {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (spinner) spinner.classList.add("hidden");
+        if (data.status === "ok") {
+            renderPropertyList(data.properties);
+            renderMapData(data.map_markers, data.searched_location, []);
+            updateFilterSummary(data.total_count, data.active_filters_count);
+            renderPagination(data);
+        }
+    })
+    .catch(function (err) {
+        if (spinner) spinner.classList.add("hidden");
+        console.error("Filter request error:", err);
+    });
+}
+
+function renderPropertyList(properties) {
+    var grid = document.getElementById("properties-grid");
+    var emptyState = document.getElementById("empty-state-container");
+    if (!grid) return;
+
+    if (!properties || properties.length === 0) {
+        grid.innerHTML = "";
+        if (emptyState) emptyState.classList.remove("hidden");
+        return;
+    }
+
+    if (emptyState) emptyState.classList.add("hidden");
+
+    var html = "";
+    properties.forEach(function (p) {
+        var rentFormatted = "₹" + Number(p.monthly_rent).toLocaleString("en-IN");
+        var bedsBadge = p.total_available_beds > 0
+            ? '<span class="rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm backdrop-blur">' + p.total_available_beds + ' bed' + (p.total_available_beds > 1 ? 's' : '') + ' vacant</span>'
+            : '<span class="rounded-full bg-slate-800/80 px-2.5 py-0.5 text-[10px] font-semibold text-slate-200 backdrop-blur">Waitlist</span>';
+
+        var facilitiesHtml = "";
+        if (p.facilities && p.facilities.length) {
+            p.facilities.slice(0, 4).forEach(function (f) {
+                facilitiesHtml += '<span class="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">' + f + '</span>';
+            });
+        }
+
+        html += '<article class="property-card group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-xl"' +
+            ' data-property-id="' + p.id + '" data-lat="' + (p.latitude || '') + '" data-lng="' + (p.longitude || '') + '">' +
+            '<div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">' +
+            '<img src="' + p.primary_image_url + '" alt="' + p.name + '" class="h-full w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" onerror="this.src=\'/static/images/rooms/room_single_cozy.jpg\';">' +
+            '<div class="absolute inset-x-0 top-0 flex items-center justify-between p-3">' +
+            '<span class="rounded-full bg-brand-950/85 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white backdrop-blur">' + p.property_type_display + '</span>' +
+            '<div class="flex items-center gap-2">' + bedsBadge + '</div>' +
+            '</div>' +
+            '<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent p-3 pt-6">' +
+            '<p class="text-xs font-bold text-white flex items-center gap-1.5"><span>📍</span><span class="truncate">' + (p.distance_text || p.locality || p.city) + '</span></p>' +
+            '</div>' +
+            '</div>' +
+            '<div class="flex flex-1 flex-col p-4">' +
+            '<div>' +
+            '<span class="text-[10px] font-bold uppercase tracking-wider text-accent-600">' + p.city + ' · ' + p.gender_display + '</span>' +
+            '<h3 class="text-base font-extrabold text-slate-900 group-hover:text-brand-700 transition"><a href="' + p.url + '">' + p.name + '</a></h3>' +
+            '</div>' +
+            '<p class="mt-1 line-clamp-2 text-xs text-slate-500 leading-relaxed">' + (p.address || '') + '</p>' +
+            '<div class="mt-3 flex flex-wrap gap-1">' + facilitiesHtml + '</div>' +
+            '<div class="mt-auto pt-4 border-t border-slate-100 flex items-end justify-between">' +
+            '<div><p class="text-xs text-slate-500">Starting from</p><p class="text-lg font-black text-brand-950">' + rentFormatted + '<span class="text-xs font-semibold text-slate-500">/mo</span></p></div>' +
+            '<a href="' + p.url + '" class="btn-primary px-3.5 py-1.5 text-xs font-bold">View Details &rarr;</a>' +
+            '</div>' +
+            '</div>' +
+            '</article>';
+    });
+
+    grid.innerHTML = html;
+}
+
+function updateFilterSummary(totalCount, activeCount) {
+    var countText = document.getElementById("results-count-text");
+    if (countText) {
+        countText.textContent = "Showing " + totalCount + " verified stay" + (totalCount === 1 ? "" : "s");
+    }
+}
+
+function renderPagination(data) {
+    var container = document.getElementById("pagination-container");
+    var info = document.getElementById("pagination-info");
+    var links = document.getElementById("pagination-links");
+    if (!container || !links) return;
+
+    if (data.num_pages <= 1) {
+        container.classList.add("hidden");
+        return;
+    }
+
+    container.classList.remove("hidden");
+    if (info) {
+        info.innerHTML = 'Showing page <strong class="text-slate-900">' + data.page + '</strong> of <strong class="text-slate-900">' + data.num_pages + '</strong>';
+    }
+
+    var html = "";
+    if (data.has_previous) {
+        html += '<button type="button" onclick="goToPage(' + data.previous_page_number + ')" class="btn-secondary px-3 py-1.5 text-xs">&larr; Previous</button>';
+    }
+    html += '<span class="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-950 text-xs font-extrabold text-white">' + data.page + '</span>';
+    if (data.has_next) {
+        html += '<button type="button" onclick="goToPage(' + data.next_page_number + ')" class="btn-secondary px-3 py-1.5 text-xs">Next &rarr;</button>';
+    }
+    links.innerHTML = html;
+}
+
+function goToPage(page) {
+    performLiveFilter(page, true);
+    window.scrollTo({ top: 120, behavior: "smooth" });
+}
+
+function resetAllFilters() {
+    var form = document.getElementById("search-filter-form");
+    if (!form) return;
+    form.reset();
+    document.getElementById("stay-search-input").value = "";
+    document.getElementById("search-lat").value = "";
+    document.getElementById("search-lng").value = "";
+    document.getElementById("search-destination").value = "";
+    document.getElementById("city-select").value = "";
+    document.getElementById("type-filter").value = "pg";
+    document.getElementById("gender-filter").value = "";
+    document.getElementById("sharing-filter").value = "";
+    document.getElementById("min-rent-filter").value = "";
+    document.getElementById("max-rent-filter").value = "";
+    document.getElementById("furnished-filter").value = "";
+
+    // Reset toggle styling
+    form.querySelectorAll("input[type='checkbox']").forEach(function (cb) {
+        cb.checked = false;
+        var label = cb.closest("label");
+        if (label) {
+            label.classList.remove("border-brand-800", "bg-brand-900", "text-white");
+            label.classList.add("border-slate-200", "bg-white", "text-slate-700");
+        }
+    });
+
+    performLiveFilter(1, true);
+}
+
+// ----------------- AUTOCOMPLETE -----------------
+function initAutocomplete() {
+    var input = document.getElementById("stay-search-input");
+    var dropdown = document.getElementById("autocomplete-dropdown");
+    var itemsContainer = document.getElementById("autocomplete-items");
+    var clearBtn = document.getElementById("clear-search-btn");
+    if (!input || !dropdown || !itemsContainer) return;
+
+    var debounceTimer;
+    input.addEventListener("input", function () {
+        var query = input.value.trim();
+        if (clearBtn) clearBtn.classList.toggle("hidden", query.length === 0);
+
+        clearTimeout(debounceTimer);
+        if (query.length < 2) {
+            dropdown.classList.add("hidden");
+            return;
+        }
+
+        debounceTimer = setTimeout(function () {
+            fetch("{% url 'locations:api_suggest' %}?q=" + encodeURIComponent(query))
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data.status === "ok" && data.suggestions && data.suggestions.length) {
+                        var html = "";
+                        data.suggestions.forEach(function (s) {
+                            var icon = "📍";
+                            if (s.category === "coaching") icon = "🎓";
+                            else if (s.category === "university" || s.category === "college") icon = "🏛️";
+                            else if (s.category === "railway_station") icon = "🚆";
+
+                            html += '<button type="button" class="autocomplete-item flex w-full items-center gap-3 p-2.5 text-left transition hover:bg-slate-50" ' +
+                                'data-name="' + (s.name || '') + '" data-lat="' + (s.latitude || '') + '" data-lng="' + (s.longitude || '') + '" data-city="' + (s.city || '') + '">' +
+                                '<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 text-sm">' + icon + '</span>' +
+                                '<div class="min-w-0 flex-1">' +
+                                '<p class="text-xs font-bold text-slate-900 truncate">' + s.name + '</p>' +
+                                '<p class="text-[11px] text-slate-500 truncate">' + (s.address || s.city || '') + '</p>' +
+                                '</div>' +
+                                '</button>';
+                        });
+                        itemsContainer.innerHTML = html;
+                        dropdown.classList.remove("hidden");
+
+                        dropdown.querySelectorAll(".autocomplete-item").forEach(function (btn) {
+                            btn.addEventListener("click", function () {
+                                input.value = this.dataset.name;
+                                document.getElementById("search-lat").value = this.dataset.lat;
+                                document.getElementById("search-lng").value = this.dataset.lng;
+                                document.getElementById("search-destination").value = this.dataset.name;
+                                if (this.dataset.city) {
+                                    var citySel = document.getElementById("city-select");
+                                    if (citySel) citySel.value = this.dataset.city;
+                                }
+                                dropdown.classList.add("hidden");
+                                performLiveFilter(1, true);
+                            });
+                        });
+                    } else {
+                        dropdown.classList.add("hidden");
+                    }
+                })
+                .catch(function () { dropdown.classList.add("hidden"); });
+        }, 250);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add("hidden");
+        }
+    });
+}
+
+// ----------------- VIEW MODE SWITCHER -----------------
+function initViewModes() {
+    var btnSplit = document.getElementById("btn-view-split");
+    var btnList = document.getElementById("btn-view-list");
+    var btnMap = document.getElementById("btn-view-map");
+    var listCol = document.getElementById("list-column");
+    var mapCol = document.getElementById("map-column");
+    var searchViewInput = document.getElementById("search-view");
+
+    function setView(mode) {
+        if (searchViewInput) searchViewInput.value = mode;
+
+        [btnSplit, btnList, btnMap].forEach(function (btn) {
+            if (btn) {
+                btn.classList.remove("bg-white", "text-brand-950", "shadow-sm");
+                btn.classList.add("text-slate-600");
+            }
+        });
+
+        if (mode === "list") {
+            btnList.classList.add("bg-white", "text-brand-950", "shadow-sm");
+            btnList.classList.remove("text-slate-600");
+            listCol.className = "lg:col-span-12";
+            mapCol.classList.add("hidden");
+        } else if (mode === "map") {
+            if (btnMap) {
+                btnMap.classList.add("bg-white", "text-brand-950", "shadow-sm");
+                btnMap.classList.remove("text-slate-600");
+            }
+            listCol.classList.add("hidden");
+            mapCol.className = "lg:col-span-12";
+            mapCol.classList.remove("hidden");
+            if (map) map.invalidateSize();
+        } else {
+            btnSplit.classList.add("bg-white", "text-brand-950", "shadow-sm");
+            btnSplit.classList.remove("text-slate-600");
+            listCol.className = "lg:col-span-7";
+            mapCol.className = "lg:sticky lg:top-24 lg:col-span-5";
+            listCol.classList.remove("hidden");
+            mapCol.classList.remove("hidden");
+            if (map) map.invalidateSize();
+        }
+    }
+
+    if (btnSplit) btnSplit.addEventListener("click", function () { setView("split"); });
+    if (btnList) btnList.addEventListener("click", function () { setView("list"); });
+    if (btnMap) btnMap.addEventListener("click", function () { setView("map"); });
+}
+</script>
+{% endblock %}
+

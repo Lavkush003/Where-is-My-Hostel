@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | {{ site_name }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endblock %}
+
+{% block content %}
+<section class="bg-slate-50 py-10 sm:py-14">
+    <div class="mx-auto w-full max-w-4xl px-4 sm:px-6">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-accent-600">Property Owner Portal</span>
+                    <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-brand-950 sm:text-3xl">{{ page_title }}</h1>
+                    <p class="mt-1 text-sm text-slate-600">{{ page_copy }}</p>
+                </div>
+                <a href="{% url 'properties:owner_list' %}" class="btn-secondary self-start sm:self-auto">Back to listings</a>
+            </div>
+
+            {% if property %}
+                <div class="mt-6 flex flex-col gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-brand-900">
+                            Editing <span class="font-extrabold">{{ property.name }}</span>
+                            · {% if property.is_active and property.is_approved %}
+                                <span class="badge badge-available">Live</span>
+                            {% elif not property.is_approved %}
+                                <span class="badge badge-waitlist">Pending Admin Approval</span>
+                            {% else %}
+                                <span class="badge badge-waitlist">Hidden</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'properties:room_list' property.slug %}" class="btn-secondary py-1.5 text-xs font-bold">Manage Rooms</a>
+                        <a href="{% url 'properties:gallery_manage' property.slug %}" class="btn-secondary py-1.5 text-xs font-bold">Photos</a>
+                    </div>
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="mt-8 space-y-8" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800" role="alert">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- SECTION 1: BASIC DETAILS -->
+                <div class="space-y-5 border-b border-slate-100 pb-8">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-xs font-bold text-brand-900">1</span>
+                        <h2 class="text-base font-extrabold text-brand-950">Basic Details</h2>
+                    </div>
+
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label for="{{ form.name.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Property Name *</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.name.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.property_type.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Property Category *</label>
+                            {{ form.property_type }}
+                            {% if form.property_type.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.property_type.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.gender_preference.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Gender Preference *</label>
+                            {{ form.gender_preference }}
+                            {% if form.gender_preference.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.gender_preference.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="{{ form.description.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Property Description *</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.description.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: LOCATION & ADDRESS -->
+                <div class="space-y-5 border-b border-slate-100 pb-8">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-xs font-bold text-brand-900">2</span>
+                        <h2 class="text-base font-extrabold text-brand-950">Location & Address</h2>
+                    </div>
+
+                    <div class="grid gap-5 sm:grid-cols-3">
+                        <div class="sm:col-span-2">
+                            <label for="{{ form.address.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Complete Street Address *</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.address.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.locality.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Locality / Area</label>
+                            {{ form.locality }}
+                            {% if form.locality.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.locality.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.city.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">City *</label>
+                            {{ form.city }}
+                            {% if form.city.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.city.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.state.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">State</label>
+                            {{ form.state }}
+                            {% if form.state.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.state.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.pincode.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">PIN Code</label>
+                            {{ form.pincode }}
+                            {% if form.pincode.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.pincode.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div class="sm:col-span-3">
+                            <label for="{{ form.landmark.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Landmark / Nearby Institutes</label>
+                            {{ form.landmark }}
+                            <p class="mt-1 text-xs text-slate-500">Mention colleges, major coaching institutes, metro stations, or railway stations nearby.</p>
+                        </div>
+
+                        <div>
+                            <label for="{{ form.latitude.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Latitude (Optional)</label>
+                            {{ form.latitude }}
+                            {% if form.latitude.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.latitude.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.longitude.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Longitude (Optional)</label>
+                            {{ form.longitude }}
+                            {% if form.longitude.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.longitude.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <!-- Interactive Pin Location Map -->
+                        <div class="sm:col-span-3 mt-1">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-800">Pinpoint Exact Location</label>
+                                    <p class="text-xs text-slate-500">Drag marker or click the map to place your property entrance.</p>
+                                </div>
+                                <button type="button"
+                                        id="btn-geocode-address"
+                                        class="inline-flex items-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-800 hover:bg-brand-100 transition shadow-sm">
+                                    <svg class="h-3.5 w-3.5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                                    <span>Locate Address on Map</span>
+                                </button>
+                            </div>
+                            <div id="owner-pin-map" class="h-64 w-full rounded-2xl border border-slate-200 bg-slate-100 shadow-inner z-0"></div>
+                            <p id="geo-status-msg" class="mt-1.5 text-xs text-slate-500"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: PRICING & CONTACT -->
+                <div class="space-y-5 border-b border-slate-100 pb-8">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-xs font-bold text-brand-900">3</span>
+                        <h2 class="text-base font-extrabold text-brand-950">Pricing & Contact</h2>
+                    </div>
+
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="{{ form.monthly_rent.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Base / Starting Monthly Rent (₹) *</label>
+                            {{ form.monthly_rent }}
+                            <p class="mt-1 text-xs text-slate-500">You can also specify detailed rents per room configuration in the next step.</p>
+                            {% if form.monthly_rent.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.monthly_rent.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.deposit.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Security Deposit Terms</label>
+                            {{ form.deposit }}
+                            {% if form.deposit.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.deposit.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.available_from.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Available From</label>
+                            {{ form.available_from }}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.contact_number.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Contact Number *</label>
+                            {{ form.contact_number }}
+                            {% if form.contact_number.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.contact_number.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: FACILITIES & AMENITIES -->
+                <div class="space-y-5 border-b border-slate-100 pb-8">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-xs font-bold text-brand-900">4</span>
+                        <h2 class="text-base font-extrabold text-brand-950">Facilities & Amenities</h2>
+                    </div>
+                    <p class="text-xs text-slate-500">Check all facilities provided for students staying at this property.</p>
+
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {% for choice in form.facility_choices %}
+                            <label class="flex items-center gap-2.5 rounded-xl border border-slate-200 p-3 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 cursor-pointer">
+                                {{ choice.tag }}
+                                <span>{{ choice.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-3">
+                        <label for="{{ form.facilities.id_for_label }}" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Other Custom Facilities</label>
+                        {{ form.facilities }}
+                    </div>
+                </div>
+
+                <!-- SECTION 5: COVER PHOTO & STATUS -->
+                <div class="space-y-5">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-xs font-bold text-brand-900">5</span>
+                        <h2 class="text-base font-extrabold text-brand-950">Cover Photo & Listing Status</h2>
+                    </div>
+
+                    <div>
+                        <label for="{{ form.image.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">Primary Cover Photo</label>
+                        {{ form.image }}
+                        <p class="mt-1 text-xs text-slate-500">Upload a clear exterior or hero room photograph (JPG or PNG).</p>
+                        {% if property and property.image %}
+                            <div class="mt-3 flex items-center gap-3">
+                                <img src="{{ property.image.url }}" alt="{{ property.name }}" class="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-200">
+                                <span class="text-xs text-slate-500">Current cover image</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="text-sm font-semibold text-slate-800">
+                            Listing is active and accepting new student inquiries
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+                    <a href="{% url 'properties:owner_list' %}" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary">{{ submit_label }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var latInput = document.getElementById("{{ form.latitude.id_for_label }}");
+    var lngInput = document.getElementById("{{ form.longitude.id_for_label }}");
+    var addressInput = document.getElementById("{{ form.address.id_for_label }}");
+    var cityInput = document.getElementById("{{ form.city.id_for_label }}");
+    var stateInput = document.getElementById("{{ form.state.id_for_label }}");
+    var landmarkInput = document.getElementById("{{ form.landmark.id_for_label }}");
+    var statusMsg = document.getElementById("geo-status-msg");
+    var locateBtn = document.getElementById("btn-geocode-address");
+
+    var currentLat = parseFloat(latInput.value) || 25.4358;
+    var currentLng = parseFloat(lngInput.value) || 81.8463;
+    var hasInitialCoords = !!(latInput.value && lngInput.value);
+
+    var map = L.map("owner-pin-map").setView([currentLat, currentLng], hasInitialCoords ? 15 : 12);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+
+    var marker = L.marker([currentLat, currentLng], {
+        draggable: true,
+        title: "Drag to property location"
+    }).addTo(map);
+
+    function updateInputs(lat, lng) {
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+        if (statusMsg) {
+            statusMsg.textContent = "Coordinates set: " + lat.toFixed(6) + ", " + lng.toFixed(6);
+            statusMsg.className = "mt-1.5 text-xs text-emerald-700 font-semibold";
+        }
+    }
+
+    if (hasInitialCoords) {
+        updateInputs(currentLat, currentLng);
+    }
+
+    marker.on("dragend", function (e) {
+        var pos = marker.getLatLng();
+        updateInputs(pos.lat, pos.lng);
+    });
+
+    map.on("click", function (e) {
+        marker.setLatLng(e.latlng);
+        updateInputs(e.latlng.lat, e.latlng.lng);
+    });
+
+    if (locateBtn) {
+        locateBtn.addEventListener("click", function () {
+            var parts = [];
+            if (addressInput && addressInput.value.trim()) parts.push(addressInput.value.trim());
+            if (landmarkInput && landmarkInput.value.trim()) parts.push(landmarkInput.value.trim());
+            if (cityInput && cityInput.value.trim()) parts.push(cityInput.value.trim());
+            if (stateInput && stateInput.value.trim()) parts.push(stateInput.value.trim());
+
+            var query = parts.join(", ");
+            if (!query) {
+                alert("Please fill in the city or address before locating.");
+                return;
+            }
+
+            locateBtn.disabled = true;
+            locateBtn.classList.add("opacity-60");
+            if (statusMsg) {
+                statusMsg.textContent = "Searching location coordinates...";
+                statusMsg.className = "mt-1.5 text-xs text-brand-600 font-medium";
+            }
+
+            fetch("/locations/api/geocode/?q=" + encodeURIComponent(query))
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    locateBtn.disabled = false;
+                    locateBtn.classList.remove("opacity-60");
+                    if (data.status === "ok" && data.result) {
+                        var lat = data.result.latitude;
+                        var lng = data.result.longitude;
+                        marker.setLatLng([lat, lng]);
+                        map.setView([lat, lng], 15);
+                        updateInputs(lat, lng);
+                        if (statusMsg) {
+                            statusMsg.textContent = "✓ Located: " + (data.result.display_name || data.result.name) + " (" + lat.toFixed(4) + ", " + lng.toFixed(4) + ")";
+                            statusMsg.className = "mt-1.5 text-xs text-emerald-700 font-bold";
+                        }
+                    } else {
+                        if (statusMsg) {
+                            statusMsg.textContent = "Could not locate exact address. Drag marker to place pin.";
+                            statusMsg.className = "mt-1.5 text-xs text-amber-700";
+                        }
+                    }
+                })
+                .catch(function (err) {
+                    locateBtn.disabled = false;
+                    locateBtn.classList.remove("opacity-60");
+                    if (statusMsg) {
+                        statusMsg.textContent = "Geocoding request failed. You can drag the map pin manually.";
+                        statusMsg.className = "mt-1.5 text-xs text-slate-500";
+                    }
+                });
+        });
+    }
+});
+</script>
+{% endblock %}

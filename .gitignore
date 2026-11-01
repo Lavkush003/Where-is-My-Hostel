@@ -1,0 +1,184 @@
+# ==============================================================================
+# Where Is My Hostel - Git Ignore Configuration
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Environment Variables & Secrets
+# ------------------------------------------------------------------------------
+.env
+.env.*
+*.env
+*.env.*
+Backend/.env
+Frontend/.env
+local_settings.py
+secrets.json
+client_secret*.json
+*.pem
+*.key
+*.cert
+*.crt
+
+# Always keep example templates in version control
+!.env.example
+!Backend/.env.example
+!Frontend/.env.example
+
+# ------------------------------------------------------------------------------
+# 2. Python & Virtual Environments
+# ------------------------------------------------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+python/
+
+# Testing, coverage & linting caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# ------------------------------------------------------------------------------
+# 3. Django Framework Artifacts
+# ------------------------------------------------------------------------------
+# SQLite databases
+*.sqlite3
+*.sqlite3-journal
+*.db
+db.sqlite3
+db.sqlite3-journal
+Backend/db.sqlite3
+Backend/db.sqlite3-journal
+
+# Collected static files (built via python manage.py collectstatic)
+staticfiles/
+Backend/staticfiles/
+
+# User-uploaded media files (keep source static/ directory tracked)
+media/
+mediafiles/
+Backend/media/
+Backend/mediafiles/
+
+# Application log files
+*.log
+logs/
+
+# ------------------------------------------------------------------------------
+# 4. Frontend, Node.js & Tailwind CSS
+# ------------------------------------------------------------------------------
+# Node dependencies
+node_modules/
+Frontend/node_modules/
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Build tools, linters & package caches
+.npm/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+Frontend/dist/
+.vite/
+.turbo/
+
+# ------------------------------------------------------------------------------
+# 5. IDEs, Editors & Developer Tools
+# ------------------------------------------------------------------------------
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains (PyCharm, WebStorm, etc.)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Vim & Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# AI Agents & scratch pads
+.gemini/
+.antigravity/
+.claude/
+.cursor/
+scratch/
+tmp/
+temp/
+
+# ------------------------------------------------------------------------------
+# 6. Operating System Files
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.fuse_hidden*

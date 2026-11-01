@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Saved stays | {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-white py-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-sm font-bold uppercase tracking-wider text-accent-600">Student account</p>
+                <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-950">Saved stays</h1>
+                <p class="mt-2 text-sm text-slate-600">Your shortlist of properties to revisit and compare.</p>
+            </div>
+            <a href="{% url 'properties:list' %}" class="btn-primary">Browse more stays</a>
+        </div>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {% if favourites %}
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {% for favourite in favourites %}
+                    <div class="property-card flex flex-col overflow-hidden">
+                        {% if favourite.property.image %}
+                            <div class="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+                                <img src="{{ favourite.property.image.url }}" alt="{{ favourite.property.name }}" class="h-full w-full object-cover">
+                            </div>
+                        {% endif %}
+                        <div class="flex flex-1 flex-col p-5">
+                            <p class="text-xs font-bold uppercase tracking-wider text-accent-600">{{ favourite.property.get_property_type_display }}</p>
+                            <a href="{{ favourite.property.get_absolute_url }}" class="mt-1.5 text-lg font-extrabold text-brand-950 hover:text-brand-700">{{ favourite.property.name }}</a>
+                            <p class="mt-1 text-xs text-slate-500">{{ favourite.property.city }}{% if favourite.property.landmark %} · {{ favourite.property.landmark }}{% endif %}</p>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">{{ favourite.property.description|truncatewords:18 }}</p>
+                            <div class="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-4">
+                                <p class="text-lg font-extrabold text-brand-950">₹{{ favourite.property.monthly_rent|intcomma }}<span class="text-xs font-semibold text-slate-500">/month</span></p>
+                                <form method="post" action="{% url 'properties:favourite' favourite.property.slug %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="text-xs font-bold text-rose-600 hover:text-rose-700">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+                <h2 class="text-xl font-extrabold text-brand-950">No saved stays yet</h2>
+                <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">Open a live property and use the save button to build your shortlist.</p>
+                <a href="{% url 'properties:list' %}" class="btn-primary mt-5">Browse stays</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

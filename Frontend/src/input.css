@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply font-sans;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-950;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+  }
+
+  .mobile-nav-link {
+    @apply block rounded-lg px-3 py-2 text-base font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+  }
+
+  .footer-link {
+    @apply text-slate-600 transition hover:text-brand-700;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center rounded-lg bg-accent-500 px-5 py-3 text-sm font-bold text-brand-950 shadow-sm transition hover:bg-accent-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+
+  .section-eyebrow {
+    @apply text-sm font-bold uppercase tracking-[0.18em] text-accent-600;
+  }
+
+  .section-title {
+    @apply mt-3 text-3xl font-extrabold tracking-tight text-brand-950 sm:text-4xl;
+  }
+
+  .section-copy {
+    @apply mt-4 max-w-2xl text-base leading-7 text-slate-600;
+  }
+
+  .search-field {
+    @apply relative rounded-xl border border-slate-200 bg-white px-3 py-2.5 transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100;
+  }
+
+  .search-field-label {
+    @apply flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500;
+  }
+
+  .search-input {
+    @apply mt-1 w-full border-0 bg-transparent p-0 text-sm font-medium text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400;
+  }
+
+  .search-select {
+    @apply mt-1 w-full cursor-pointer appearance-none border-0 bg-transparent p-0 text-sm font-medium text-slate-900 outline-none;
+  }
+
+  .filter-chip {
+    @apply inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-brand-50 backdrop-blur transition hover:border-accent-300/60 hover:bg-white/15 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400;
+  }
+
+  .property-card {
+    @apply flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-950/10;
+  }
+
+  .property-image {
+    @apply relative aspect-[16/10] overflow-hidden bg-brand-100;
+  }
+
+  .property-image svg {
+    @apply h-full w-full transition duration-500 group-hover:scale-[1.03];
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide;
+  }
+
+  .badge-available {
+    @apply bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200;
+  }
+
+  .badge-limited {
+    @apply bg-accent-50 text-accent-700 ring-1 ring-inset ring-accent-200;
+  }
+
+  .badge-waitlist {
+    @apply bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200;
+  }
+
+  .facility-tag {
+    @apply inline-flex rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600;
+  }
+
+  .feature-card {
+    @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md;
+  }
+
+  .feature-icon {
+    @apply flex h-11 w-11 items-center justify-center rounded-xl;
+  }
+
+  .feature-title {
+    @apply mt-4 text-base font-semibold text-slate-900;
+  }
+
+  .feature-copy {
+    @apply mt-2 text-sm leading-6 text-slate-600;
+  }
+
+  .step-card {
+    @apply flex gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm;
+  }
+
+  .step-number {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-sm font-bold text-brand-800;
+  }
+
+  .city-card {
+    @apply flex flex-col rounded-xl border border-slate-200 bg-slate-50 px-4 py-5 transition hover:border-brand-300 hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+  }
+
+  .city-name {
+    @apply text-base font-semibold text-slate-900 group-hover:text-brand-800;
+  }
+
+  .city-meta {
+    @apply mt-1 text-xs font-medium uppercase tracking-wide text-slate-500 group-hover:text-brand-700;
+  }
+
+  .form-help {
+    @apply mt-1.5 text-xs leading-5 text-slate-500;
+  }
+
+  .form-help ul {
+    @apply mt-1 list-disc space-y-1 pl-5;
+  }
+}
+
+.hero-surface {
+  background-color: #081a33;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(74, 123, 184, 0.34), transparent 34%),
+    radial-gradient(circle at 84% 12%, rgba(249, 115, 22, 0.2), transparent 30%),
+    radial-gradient(circle at 72% 88%, rgba(74, 123, 184, 0.18), transparent 38%);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.map-grid {
+  background-color: #f8fafc;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.18) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.map-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 25% 30%, rgba(74, 123, 184, 0.16), transparent 35%),
+    radial-gradient(circle at 78% 68%, rgba(249, 115, 22, 0.12), transparent 38%);
+  pointer-events: none;
+}

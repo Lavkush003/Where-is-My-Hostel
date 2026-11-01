@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ property.name }} | {{ site_name }}{% endblock %}
+{% block meta_description %}Sample listing for {{ property.name }} in {{ property.location }}. View rent, facilities, sharing options and nearby distance information.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endblock %}
+
+{% block content %}
+{% include "partials/property_sprites.html" %}
+
+<section class="border-b border-slate-200 bg-white py-6">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-slate-500" aria-label="Breadcrumb">
+            <a href="{% url 'core:home' %}" class="transition hover:text-brand-700">Home</a>
+            <span aria-hidden="true">/</span>
+            <a href="{% url 'properties:list' %}" class="transition hover:text-brand-700">Browse stays</a>
+            <span aria-hidden="true">/</span>
+            <span class="truncate text-slate-700" aria-current="page">{{ property.name }}</span>
+        </nav>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-10 sm:py-14">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-6 flex flex-wrap items-center gap-2">
+            <span class="rounded-full bg-accent-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-700 ring-1 ring-inset ring-accent-200">Sample listing preview</span>
+            <span class="rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">Not a live availability offer</span>
+        </div>
+
+        <div class="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-start">
+            <div>
+                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
+                    <div class="relative overflow-hidden rounded-2xl bg-brand-900">
+                        {% if property.image_url %}
+                            <img src="{{ property.image_url }}"
+                                 alt="Photo of {{ property.name }}"
+                                 class="aspect-[4/3] h-auto w-full object-cover transition duration-500 hover:scale-105"
+                                 loading="eager"
+                                 onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                        {% else %}
+                            <img src="/static/images/rooms/room_single_cozy.jpg"
+                                 alt="Photo of {{ property.name }}"
+                                 class="aspect-[4/3] h-auto w-full object-cover transition duration-500 hover:scale-105"
+                                 loading="eager">
+                        {% endif %}
+                        <span class="sr-only {{ property.image }}">{{ property.image }}</span>
+                        <div class="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+                            <span class="rounded-full bg-brand-950/85 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur">{{ property.type }}</span>
+                            <span class="badge {% if property.availability_style == 'available' %}badge-available{% elif property.availability_style == 'limited' %}badge-limited{% else %}badge-waitlist{% endif %} bg-white/95 backdrop-blur">{{ property.availability }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-brand-950 sm:text-4xl">{{ property.name }}</h1>
+                    <p class="mt-2 flex items-center gap-2 text-sm font-medium text-slate-600">
+                        <svg class="h-4 w-4 shrink-0 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/>
+                            <circle cx="12" cy="9.75" r="2.25"/>
+                        </svg>
+                        {{ property.location }}
+                    </p>
+
+                    <div class="mt-6 flex flex-wrap items-center gap-3 border-y border-slate-100 py-4">
+                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-700">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="m12 17.27 5.18 3.13-1.37-5.9 4.58-3.97-6.03-.51L12 4.5 9.64 10.02l-6.03.51 4.58 3.97-1.37 5.9L12 17.27Z"/>
+                            </svg>
+                            {{ property.rating }}
+                        </span>
+                        <span class="text-sm text-slate-500">{{ property.reviews }} sample reviews</span>
+                        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                        <span class="text-sm font-medium text-slate-600">{{ property.distance }}</span>
+                    </div>
+
+                    <h2 class="mt-6 text-lg font-extrabold text-brand-950">About this stay</h2>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">{{ property.description }}</p>
+
+                    <h2 class="mt-7 text-lg font-extrabold text-brand-950">Facilities</h2>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        {% for facility in property.facilities %}
+                            <span class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
+                                <svg class="h-3.5 w-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                                </svg>
+                                {{ facility }}
+                            </span>
+                        {% endfor %}
+                    </div>
+
+                    <h2 class="mt-7 text-lg font-extrabold text-brand-950">Sharing options</h2>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        {% for option in property.sharing %}
+                            <span class="rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-800">{{ option }} sharing</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Map Section -->
+                    <div class="mt-8 border-t border-slate-100 pt-6">
+                        <h2 class="text-lg font-extrabold text-brand-950">Location & Interactive Map</h2>
+                        <p class="mt-1 text-xs text-slate-500">{{ property.location }} · {{ property.distance }}</p>
+                        <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200">
+                            <div id="property-map" class="h-64 w-full bg-slate-100"></div>
+                        </div>
+                    </div>
+
+                    <!-- Nearby Places -->
+                    {% if nearby_places.all %}
+                        <div class="mt-8 border-t border-slate-100 pt-6">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-lg font-extrabold text-brand-950">Nearby Important Places</h2>
+                                <span class="text-xs text-slate-400">Within 3 km</span>
+                            </div>
+                            <div class="mt-4 grid gap-2.5 sm:grid-cols-2">
+                                {% for place in nearby_places.all|slice:":10" %}
+                                    <div class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 p-2.5 text-xs">
+                                        <div class="flex items-center gap-2.5 min-w-0">
+                                            <span>{{ place.icon|default:"📍" }}</span>
+                                            <div class="min-w-0">
+                                                <p class="truncate font-bold text-slate-900">{{ place.name }}</p>
+                                                <p class="truncate text-[10px] text-slate-500">{{ place.category }}</p>
+                                            </div>
+                                        </div>
+                                        <span class="shrink-0 rounded bg-brand-100 px-2 py-0.5 text-[11px] font-bold text-brand-800">
+                                            {{ place.distance_text }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <aside class="lg:sticky lg:top-24">
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-brand-950/5">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Starting from</p>
+                    <p class="mt-1 text-3xl font-extrabold text-brand-950">₹{{ property.rent|intcomma }}<span class="text-sm font-semibold text-slate-500">/month</span></p>
+                    <p class="mt-1 text-xs text-slate-500">Deposit: {{ property.deposit|lower }}</p>
+
+                    <dl class="mt-5 space-y-3 border-y border-slate-100 py-5 text-sm">
+                        <div class="flex items-center justify-between gap-4">
+                            <dt class="text-slate-500">Stay type</dt>
+                            <dd class="font-semibold text-slate-900">{{ property.type }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-4">
+                            <dt class="text-slate-500">Nearby landmark</dt>
+                            <dd class="text-right font-semibold text-slate-900">{{ property.landmark }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-4">
+                            <dt class="text-slate-500">Availability</dt>
+                            <dd class="font-semibold text-slate-900">{{ property.availability }}</dd>
+                        </div>
+                    </dl>
+
+                    <a href="{% url 'core:contact' %}" class="btn-accent mt-5 w-full">Ask about this stay</a>
+                    <a href="{% url 'properties:list' %}?city={{ property.location|urlencode }}" class="btn-secondary mt-2 w-full">Browse near this area</a>
+
+                    <p class="mt-4 text-center text-[11px] leading-5 text-slate-500">
+                        This is sample content for UI preview. Confirm rent, availability and terms directly with the property owner.
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+{% if related_properties %}
+<section class="bg-white py-14 sm:py-16">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between gap-4">
+            <div>
+                <p class="section-eyebrow">More sample stays</p>
+                <h2 class="section-title">Keep exploring</h2>
+            </div>
+            <a href="{% url 'properties:list' %}" class="hidden text-sm font-bold text-brand-700 transition hover:text-brand-900 sm:inline-flex">Browse all stays</a>
+        </div>
+
+        <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {% for item in related_properties %}
+                <a href="{% url 'properties:detail' item.slug %}" class="property-card group">
+                    <div class="property-image">
+                        {% if item.image_url %}
+                            <img src="{{ item.image_url }}"
+                                 alt="Photo of {{ item.name }}"
+                                 class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                 loading="lazy"
+                                 onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                        {% else %}
+                            <img src="/static/images/rooms/room_single_cozy.jpg"
+                                 alt="Photo of {{ item.name }}"
+                                 class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                 loading="lazy">
+                        {% endif %}
+                        <span class="sr-only {{ item.image }}">{{ item.image }}</span>
+                        <span class="absolute left-3 top-3 rounded-full bg-brand-950/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">{{ item.type }}</span>
+                    </div>
+                    <div class="flex flex-1 flex-col p-5">
+                        <p class="text-xs font-bold uppercase tracking-wider text-accent-600">{{ item.location }}</p>
+                        <h3 class="mt-1.5 text-lg font-extrabold text-brand-950">{{ item.name }}</h3>
+                        <p class="mt-1 text-xs text-slate-500">{{ item.distance }}</p>
+                        <div class="mt-auto flex items-end justify-between border-t border-slate-100 pt-4">
+                            <p class="text-lg font-extrabold text-brand-950">₹{{ item.rent|intcomma }}<span class="text-xs font-semibold text-slate-500">/month</span></p>
+                            <span class="text-xs font-bold text-brand-700">View details</span>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var lat = {{ property.latitude|default:"25.4526" }};
+    var lng = {{ property.longitude|default:"81.8349" }};
+    var title = "{{ property.name|escapejs }}";
+    var rent = "₹{{ property.rent|intcomma }}/mo";
+    var nearbyPois = {{ nearby_pois_json|safe }};
+
+    var map = L.map('property-map').setView([lat, lng], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var propIcon = L.divIcon({
+        className: 'custom-property-pin',
+        html: '<div style="background:#081a33;color:white;padding:4px 8px;border-radius:12px;font-weight:800;font-size:11px;border:2px solid white;box-shadow:0 3px 10px rgba(0,0,0,0.3);white-space:nowrap;">🏠 ' + rent + '</div>',
+        iconSize: [70, 26],
+        iconAnchor: [35, 13]
+    });
+
+    L.marker([lat, lng], { icon: propIcon }).addTo(map)
+        .bindPopup('<b>' + title + '</b><br><span style="font-size:11px;color:#059669;font-weight:700;">' + rent + '</span>')
+        .openPopup();
+
+    if (nearbyPois && nearbyPois.length) {
+        nearbyPois.forEach(function (poi) {
+            if (poi.latitude && poi.longitude) {
+                var poiIcon = L.divIcon({
+                    className: 'custom-poi-pin',
+                    html: '<div style="background:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.2);border:1.5px solid #cbd5e1;font-size:12px;">' + (poi.icon || '📍') + '</div>',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+                L.marker([poi.latitude, poi.longitude], { icon: poiIcon }).addTo(map)
+                    .bindPopup('<b>' + (poi.icon || '') + ' ' + poi.name + '</b><br><span style="font-size:11px;color:#64748b;">' + poi.category + ' · ' + poi.distance_text + '</span>');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

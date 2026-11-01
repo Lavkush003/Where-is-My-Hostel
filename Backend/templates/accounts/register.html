@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Create an account | {{ site_name }}{% endblock %}
+{% block meta_description %}Create a student or property owner account for Where Is My Hostel.{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-br from-brand-50 via-white to-amber-50 py-16 sm:py-20">
+    <div class="mx-auto w-full max-w-lg px-4 sm:px-6">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-8">
+            <div class="text-center">
+                <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-700 text-white">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 9.75V21h13.5V9.75"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 21v-5.25h4.5V21"/>
+                    </svg>
+                </span>
+                <h1 class="mt-4 text-2xl font-bold tracking-tight text-slate-900">Create your account</h1>
+                <p class="mt-2 text-sm text-slate-600">Join as a student looking for a stay or a property owner listing rooms.</p>
+            </div>
+
+            <form method="post" action="{% url 'accounts:register' %}" class="mt-8 space-y-5" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-help">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="mt-1.5 text-sm text-red-700">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn-primary w-full justify-center">Create account</button>
+            </form>
+
+            <p class="mt-6 border-t border-slate-200 pt-5 text-center text-sm text-slate-600">
+                Already have an account?
+                <a href="{% url 'accounts:login' %}" class="font-semibold text-brand-700 hover:text-brand-800">Log in</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

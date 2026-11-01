@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Use | {{ site_name }}{% endblock %}
+{% block meta_description %}Review the terms that apply when using Where Is My Hostel during its early development phase.{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-accent-50 py-14 sm:py-16">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <p class="section-eyebrow">Legal</p>
+        <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-brand-950 sm:text-5xl">Terms of Use</h1>
+        <p class="mt-4 text-sm font-medium text-slate-500">Last updated: October 2026</p>
+        <p class="mt-5 max-w-2xl text-base leading-7 text-slate-600">
+            These terms apply when you access Where Is My Hostel. By using the site, you agree to use it responsibly and lawfully.
+        </p>
+    </div>
+</section>
+
+<section class="bg-white py-14 sm:py-16">
+    <div class="mx-auto max-w-4xl space-y-9 px-4 text-sm leading-7 text-slate-600 sm:px-6 lg:px-8">
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">1. About the service</h2>
+            <p class="mt-3">Where Is My Hostel is an early-stage platform for discovering PGs, hostels, private rooms and rental accommodation near colleges, coaching centres and other landmarks. Features may change as the platform is developed.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">2. Sample and demo content</h2>
+            <p class="mt-3">Some city guides, property cards and stay details are sample content used to preview the planned experience. They are clearly labelled and do not represent confirmed availability, pricing or a binding offer.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">3. Using your account</h2>
+            <ul class="mt-3 list-disc space-y-2 pl-5">
+                <li>Provide accurate information when creating an account.</li>
+                <li>Keep your login credentials private.</li>
+                <li>Do not use the site for unlawful, misleading or harmful activity.</li>
+                <li>Do not attempt to disrupt the site, access other accounts or misuse forms.</li>
+            </ul>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">4. Listings and third-party information</h2>
+            <p class="mt-3">Property information may come from owners, partners or sample data. While we aim for clear and useful content, we cannot guarantee that every detail is complete or current. Students should verify rent, deposit, rules, safety and availability directly with the property owner before making a payment or moving in.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">5. No brokerage or tenancy relationship</h2>
+            <p class="mt-3">Where Is My Hostel is a discovery platform. Unless stated otherwise, we are not a party to any agreement between a student and a property owner and do not guarantee a tenancy or booking.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">6. Intellectual property</h2>
+            <p class="mt-3">The site design, branding, text and original illustrations belong to Where Is My Hostel or are used with permission. You may not copy or republish substantial parts of the service without written permission.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">7. Limitation of liability</h2>
+            <p class="mt-3">The service is provided on an “as available” basis. To the extent permitted by law, we are not liable for losses arising from reliance on sample content, third-party property information, interruptions to the site or dealings between students and property owners.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">8. Changes to these terms</h2>
+            <p class="mt-3">We may update these terms as the platform grows. The latest version will be published on this page with a revised date. Continued use of the site after an update means you accept the revised terms.</p>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-brand-950">9. Contact</h2>
+            <p class="mt-3">
+                Questions about these terms can be sent through the
+                <a href="{% url 'core:contact' %}" class="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 hover:text-brand-900">contact page</a>.
+                Our
+                <a href="{% url 'core:privacy' %}" class="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 hover:text-brand-900">Privacy Policy</a>
+                explains how account information is handled.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

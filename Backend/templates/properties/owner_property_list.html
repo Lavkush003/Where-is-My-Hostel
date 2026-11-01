@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}My properties | {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-white py-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-sm font-bold uppercase tracking-wider text-accent-600">Property Owner Portal</p>
+                <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-950">My Properties & Accommodation</h1>
+                <p class="mt-2 text-sm text-slate-600">Add, configure rooms, upload gallery photos, and control availability of your listings.</p>
+            </div>
+            <a href="{% url 'properties:create' %}" class="btn-primary">+ Add New Property</a>
+        </div>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-10">
+    <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+        {% if properties %}
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="hidden grid-cols-[1.5fr_0.8fr_0.9fr_0.8fr_auto] gap-4 border-b border-slate-100 bg-slate-50 px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500 lg:grid">
+                    <span>Property Details</span>
+                    <span>Rooms & Beds</span>
+                    <span>Starting Rent</span>
+                    <span>Live Status</span>
+                    <span class="text-right">Actions</span>
+                </div>
+                <div class="divide-y divide-slate-100">
+                    {% for property in properties %}
+                        <div class="grid gap-4 p-5 lg:grid-cols-[1.5fr_0.8fr_0.9fr_0.8fr_auto] lg:items-center">
+                            <!-- Column 1: Info & Photo -->
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                {% if property.primary_image_url %}
+                                    <img src="{{ property.primary_image_url }}" alt="{{ property.name }}" class="h-16 w-20 rounded-xl object-cover ring-1 ring-slate-200 shrink-0" onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                                {% else %}
+                                    <img src="/static/images/rooms/room_single_cozy.jpg" alt="{{ property.name }}" class="h-16 w-20 rounded-xl object-cover ring-1 ring-slate-200 shrink-0">
+                                {% endif %}
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ property.get_absolute_url }}" class="font-extrabold text-base text-slate-900 hover:text-brand-700 block truncate">{{ property.name }}</a>
+                                        <span class="rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-bold text-brand-800">{{ property.get_gender_preference_display }}</span>
+                                    </div>
+                                    <p class="mt-0.5 text-xs text-slate-500">
+                                        {{ property.get_property_type_display }} · {{ property.city }}{% if property.locality %}, {{ property.locality }}{% endif %}
+                                    </p>
+                                    <p class="mt-1 text-[11px] text-slate-400">
+                                        {{ property.images.count }} photos in gallery
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Column 2: Rooms & Beds -->
+                            <div>
+                                <p class="text-xs font-bold text-brand-950">{{ property.rooms.count }} Room Config{{ property.rooms.count|pluralize }}</p>
+                                <p class="mt-0.5 text-xs text-emerald-700 font-semibold">
+                                    {{ property.total_available_beds }} beds vacant ({{ property.total_beds_count }} total)
+                                </p>
+                                <a href="{% url 'properties:room_list' property.slug %}" class="mt-1 inline-flex text-[11px] font-bold text-brand-700 hover:text-brand-900">
+                                    Manage Rooms &rarr;
+                                </a>
+                            </div>
+
+                            <!-- Column 3: Rent -->
+                            <div>
+                                <p class="text-sm font-extrabold text-brand-950">₹{{ property.min_monthly_rent|intcomma }}<span class="text-xs font-semibold text-slate-500">/mo</span></p>
+                                {% if property.deposit %}
+                                    <p class="text-[11px] text-slate-500 truncate">Deposit: {{ property.deposit }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Column 4: Status -->
+                            <div>
+                                {% if not property.is_approved %}
+                                    <span class="badge badge-waitlist">Pending Approval</span>
+                                {% elif property.is_active %}
+                                    <span class="badge badge-available">● Live</span>
+                                {% else %}
+                                    <span class="badge badge-waitlist">Deactivated</span>
+                                {% endif %}
+                                <form method="post" action="{% url 'properties:toggle_active' property.slug %}" class="mt-1.5">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-[11px] font-semibold text-slate-600 hover:text-brand-800 underline">
+                                        {% if property.is_active %}Turn off{% else %}Turn on{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Column 5: Actions -->
+                            <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+                                <a href="{% url 'properties:room_list' property.slug %}" class="btn-secondary py-1.5 px-3 text-xs font-bold" title="Configure room types and pricing">Rooms</a>
+                                <a href="{% url 'properties:gallery_manage' property.slug %}" class="btn-secondary py-1.5 px-3 text-xs font-bold" title="Upload photos of bedrooms, washrooms, exterior">Photos</a>
+                                <a href="{% url 'properties:edit' property.slug %}" class="btn-secondary py-1.5 px-3 text-xs font-bold" title="Edit property details">Edit</a>
+                                <form method="post" action="{% url 'properties:delete' property.slug %}" onsubmit="return confirm('Delete {{ property.name }}? This cannot be undone.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-xs font-semibold text-rose-600 hover:text-rose-800 p-2">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+                <svg class="mx-auto h-14 w-14 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5M5.25 9.75V21h13.5V9.75M9.75 21v-5.25h4.5V21"/>
+                </svg>
+                <h2 class="mt-4 text-xl font-extrabold text-brand-950">Add your first property listing</h2>
+                <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">
+                    List your PG, hostel, or rental room. You can configure multiple room categories (Single, Double, AC, Attached Bath), upload photos, and manage student enquiries.
+                </p>
+                <a href="{% url 'properties:create' %}" class="btn-primary mt-6">+ Add Property Now</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

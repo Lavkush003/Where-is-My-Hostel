@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ property.name }} | {{ site_name }}{% endblock %}
+{% block meta_description %}{{ property.name }} in {{ property.city }}. View room configurations, rent, facilities, availability, gallery photos and contact the owner.{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    .leaflet-popup-content-wrapper { border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-white py-5">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-slate-500" aria-label="Breadcrumb">
+            <a href="{% url 'core:home' %}" class="transition hover:text-brand-700">Home</a>
+            <span aria-hidden="true">/</span>
+            <a href="{% url 'properties:list' %}" class="transition hover:text-brand-700">Browse Stays</a>
+            <span aria-hidden="true">/</span>
+            <a href="{% url 'properties:list' %}?city={{ property.city|urlencode }}" class="transition hover:text-brand-700">{{ property.city }}</a>
+            <span aria-hidden="true">/</span>
+            <span class="truncate text-slate-700 font-bold" aria-current="page">{{ property.name }}</span>
+        </nav>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-8 sm:py-12">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- Top Status Bar -->
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                    ● Verified Listing
+                </span>
+                <span class="rounded-full bg-brand-900 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                    {{ property.get_property_type_display }}
+                </span>
+                <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-900 ring-1 ring-inset ring-amber-200">
+                    {{ property.get_gender_preference_display }}
+                </span>
+                {% if not property.is_approved %}
+                    <span class="rounded-full bg-rose-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-rose-800 ring-1 ring-inset ring-rose-200">
+                        Pending Admin Approval • Hidden from public search
+                    </span>
+                {% elif not property.is_active %}
+                    <span class="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Deactivated by Owner • Hidden from public search
+                    </span>
+                {% endif %}
+            </div>
+
+            {% if user.is_authenticated and user.is_owner and property.owner_id == user.id %}
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'properties:room_list' property.slug %}" class="btn-secondary py-1.5 px-3 text-xs font-bold">Manage Rooms</a>
+                    <a href="{% url 'properties:gallery_manage' property.slug %}" class="btn-secondary py-1.5 px-3 text-xs font-bold">Manage Gallery</a>
+                    <a href="{% url 'properties:edit' property.slug %}" class="btn-secondary py-1.5 px-3 text-xs font-bold">Edit Listing</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-start">
+            <div class="space-y-8">
+                <!-- PHOTO GALLERY SECTION -->
+                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <!-- Hero Display Photo -->
+                    <div class="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-brand-950">
+                        {% if property.primary_image_url %}
+                            <img id="main-gallery-view"
+                                 src="{{ property.primary_image_url }}"
+                                 alt="Main photo of {{ property.name }}"
+                                 class="h-full w-full object-cover transition duration-300"
+                                 onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                        {% else %}
+                            <img id="main-gallery-view"
+                                 src="/static/images/rooms/room_single_cozy.jpg"
+                                 alt="Main photo of {{ property.name }}"
+                                 class="h-full w-full object-cover transition duration-300">
+                        {% endif %}
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-5 text-white">
+                            <h1 class="text-2xl font-extrabold sm:text-3xl">{{ property.name }}</h1>
+                            <p class="text-xs text-brand-100 mt-1 flex items-center gap-1.5">
+                                <svg class="h-3.5 w-3.5 text-accent-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
+                                {{ property.address }}, {{ property.city }}{% if property.locality %} ({{ property.locality }}){% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Thumbnails -->
+                    {% if gallery_images %}
+                        <div class="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                            {% for g_img in gallery_images %}
+                                <button type="button"
+                                        onclick="document.getElementById('main-gallery-view').src = '{{ g_img.image.url }}';"
+                                        class="group relative h-16 w-24 shrink-0 overflow-hidden rounded-xl border border-slate-200 transition hover:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                    <img src="{{ g_img.image.url }}" alt="{{ g_img.caption|default:g_img.get_category_display }}" class="h-full w-full object-cover">
+                                    <span class="absolute inset-x-0 bottom-0 bg-black/60 py-0.5 text-[9px] font-bold uppercase text-white truncate px-1 text-center">
+                                        {{ g_img.get_category_display }}
+                                    </span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- OVERVIEW & ABOUT -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-brand-950">About this property</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Listed by {{ property.owner.get_full_name }}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Starting from</span>
+                            <p class="text-2xl font-black text-brand-950">₹{{ property.min_monthly_rent|intcomma }}<span class="text-xs font-semibold text-slate-500">/mo</span></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap gap-4 text-xs text-slate-600">
+                        {% if property.landmark %}
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-bold text-slate-900">Landmark:</span> {{ property.landmark }}
+                            </div>
+                        {% endif %}
+                        {% if property.deposit %}
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-bold text-slate-900">Security Deposit:</span> {{ property.deposit }}
+                            </div>
+                        {% endif %}
+                        {% if property.available_from %}
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-bold text-slate-900">Available from:</span> {{ property.available_from|date:"d M Y" }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <p class="mt-6 whitespace-pre-line text-sm leading-7 text-slate-700">{{ property.description }}</p>
+                </div>
+
+                <!-- ROOM CONFIGURATIONS & PRICING -->
+                <div id="rooms-section" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-brand-950">Room Options & Pricing</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Select a room configuration matching your preference and budget.</p>
+                        </div>
+                        <span class="badge badge-available">{{ property.total_available_beds }} Vacant Beds</span>
+                    </div>
+
+                    {% if rooms %}
+                        <div class="mt-6 space-y-4">
+                            {% for room in rooms %}
+                                <div class="rounded-xl border border-slate-200 p-4 transition hover:border-brand-300 hover:shadow-sm">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <h3 class="text-base font-extrabold text-brand-950">{{ room.room_type }}</h3>
+                                                <span class="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-800">{{ room.get_occupancy_display }}</span>
+                                                <span class="rounded-full {% if room.air_conditioning == 'ac' %}bg-sky-50 text-sky-800{% else %}bg-slate-100 text-slate-700{% endif %} px-2.5 py-0.5 text-xs font-bold">{{ room.get_air_conditioning_display }}</span>
+                                                <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700">{{ room.get_bathroom_type_display }}</span>
+                                            </div>
+                                            <div class="mt-2 flex flex-wrap items-center gap-4 text-xs text-slate-600">
+                                                <span>Total capacity: <strong class="text-slate-900">{{ room.total_beds }} beds</strong></span>
+                                                <span>Available now: <strong class="text-emerald-700">{{ room.available_beds }} beds</strong></span>
+                                                {% if room.security_deposit %}
+                                                    <span>Deposit: ₹{{ room.security_deposit|intcomma }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="text-left sm:text-right">
+                                            <p class="text-xl font-black text-brand-950">₹{{ room.monthly_rent|intcomma }}<span class="text-xs font-semibold text-slate-500">/mo</span></p>
+                                            <span class="badge mt-1 {% if room.available_beds > 0 %}badge-available{% else %}badge-waitlist{% endif %}">
+                                                {% if room.available_beds > 0 %}{{ room.available_beds }} bed{{ room.available_beds|pluralize }} free{% else %}Fully Booked{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="mt-6 rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-600">
+                            Room configuration details are being updated. Base starting rent is ₹{{ property.monthly_rent|intcomma }}/month.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- FACILITIES & AMENITIES GRID -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <h2 class="text-xl font-extrabold text-brand-950">Facilities & Amenities</h2>
+                    <p class="mt-1 text-xs text-slate-500">Amenities verified for students staying at {{ property.name }}.</p>
+
+                    {% if property.facilities_list %}
+                        <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            {% for facility in property.facilities_list %}
+                                <div class="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs font-semibold text-slate-800">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-emerald-800">
+                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                    </span>
+                                    <span>{{ facility }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="mt-4 text-sm text-slate-500">Facilities details to be added.</p>
+                    {% endif %}
+                </div>
+
+                <!-- MAP & ADDRESS SECTION -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <h2 class="text-xl font-extrabold text-brand-950">Location & Interactive Map</h2>
+                    <p class="mt-1 text-xs text-slate-500">{{ property.address }}, {{ property.city }}, {{ property.state }} {% if property.pincode %}- {{ property.pincode }}{% endif %}</p>
+
+                    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200">
+                        <div id="property-map" class="h-72 w-full bg-slate-100"></div>
+                    </div>
+
+                    {% if property.landmark %}
+                        <div class="mt-4 flex items-center gap-2 text-xs text-slate-600">
+                            <svg class="h-4 w-4 text-accent-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                            <span>Nearby Landmark: <strong>{{ property.landmark }}</strong></span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- NEARBY IMPORTANT PLACES (OpenStreetMap Overpass Discovery) -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xl font-extrabold text-brand-950">Nearby Important Places</h2>
+                                <span class="rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-bold text-brand-800 ring-1 ring-inset ring-brand-200">OpenStreetMap Verified</span>
+                            </div>
+                            <p class="mt-1 text-xs text-slate-500">Essential facilities, coaching institutes, colleges and transport hubs within walking and commuting distance.</p>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-400">Within 3 km radius</span>
+                    </div>
+
+                    {% if nearby_places.all %}
+                        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                            {% for place in nearby_places.all|slice:":12" %}
+                                <div class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 p-3 transition hover:border-brand-200 hover:bg-white hover:shadow-sm">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-base shadow-sm ring-1 ring-slate-200">
+                                            {{ place.icon|default:"📍" }}
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="truncate text-xs font-bold text-brand-950">{{ place.name }}</p>
+                                            <p class="truncate text-[11px] text-slate-500">{{ place.category }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="shrink-0 rounded-lg bg-brand-100/80 px-2.5 py-1 text-xs font-extrabold text-brand-900">
+                                        {{ place.distance_text }}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="mt-4 rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-500">
+                            Nearby places data is currently being retrieved from OpenStreetMap.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- ENQUIRY FORM FOR STUDENTS -->
+                {% if user.is_authenticated and user.is_student %}
+                    <div id="enquiry" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-500 text-white font-bold">✉</span>
+                            <div>
+                                <h2 class="text-xl font-extrabold text-brand-950">Submit an Enquiry</h2>
+                                <p class="text-xs text-slate-500">Send your query directly to the owner. Track the status from your student dashboard.</p>
+                            </div>
+                        </div>
+
+                        <form method="post" action="{% url 'enquiries:create' property.slug %}" class="mt-6 space-y-4" novalidate>
+                            {% csrf_token %}
+                            {% for field in enquiry_form %}
+                                {% include "partials/form_field.html" with field=field %}
+                            {% endfor %}
+                            <button type="submit" class="btn-primary w-full sm:w-auto">Send Enquiry to Owner</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- SIDEBAR: OWNER INFO & ACTIONS -->
+            <aside class="space-y-6 lg:sticky lg:top-24">
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-brand-950/5">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Starting Monthly Rent</p>
+                    <p class="mt-1 text-3xl font-black text-brand-950">₹{{ property.min_monthly_rent|intcomma }}<span class="text-sm font-semibold text-slate-500">/mo</span></p>
+                    {% if property.deposit %}<p class="mt-1 text-xs text-slate-500">Deposit: {{ property.deposit }}</p>{% endif %}
+
+                    <!-- Key highlights -->
+                    <div class="mt-5 space-y-2.5 border-y border-slate-100 py-4 text-xs font-semibold text-slate-700">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Accommodation Type:</span>
+                            <span class="text-slate-900">{{ property.get_property_type_display }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Gender Preference:</span>
+                            <span class="text-slate-900">{{ property.get_gender_preference_display }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Vacant Beds:</span>
+                            <span class="text-emerald-700">{{ property.total_available_beds }} available</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">City / State:</span>
+                            <span class="text-slate-900">{{ property.city }}, {{ property.state }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Owner Profile Card -->
+                    <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Verified Property Owner</p>
+                        <div class="mt-2.5 flex items-center gap-3">
+                            {% if owner_profile and owner_profile.profile_photo %}
+                                <img src="{{ owner_profile.profile_photo.url }}" alt="{{ property.owner.get_full_name }}" class="h-11 w-11 rounded-full object-cover ring-2 ring-white">
+                            {% else %}
+                                <span class="flex h-11 w-11 items-center justify-center rounded-full bg-brand-950 text-white font-extrabold text-sm">
+                                    {{ property.owner.get_full_name|slice:":1" }}
+                                </span>
+                            {% endif %}
+                            <div class="min-w-0">
+                                <p class="text-sm font-extrabold text-slate-900 truncate">
+                                    {% if owner_profile and owner_profile.business_name %}{{ owner_profile.business_name }}{% else %}{{ property.owner.get_full_name }}{% endif %}
+                                </p>
+                                <p class="text-xs text-slate-500">{{ property.owner.get_full_name }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Direct Contact Action Buttons -->
+                        <div class="mt-4 grid gap-2">
+                            <a href="tel:{{ property.contact_number }}" class="btn-primary w-full justify-center text-xs py-2.5">
+                                📞 Call Owner: {{ property.contact_number }}
+                            </a>
+                            <a href="https://wa.me/91{{ property.contact_number }}?text=Hello,%20I%20am%20interested%20in%20your%20property%20{{ property.name|urlencode }}%20on%20Where%20Is%20My%20Hostel." target="_blank" class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-700">
+                                💬 Chat on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Student Favourite / Enquire Actions -->
+                    {% if user.is_authenticated and user.is_student %}
+                        <div class="mt-4 space-y-2">
+                            <form method="post" action="{% url 'properties:favourite' property.slug %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <button type="submit" class="btn-secondary w-full justify-center text-xs">
+                                    {% if is_favourite %}★ Remove from Saved Stays{% else %}☆ Save to Favourites{% endif %}
+                                </button>
+                            </form>
+                            <a href="#enquiry" class="btn-accent w-full justify-center text-xs">Send Online Enquiry</a>
+                        </div>
+                    {% elif not user.is_authenticated %}
+                        <div class="mt-4 space-y-2">
+                            <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" class="btn-accent w-full justify-center text-xs">Log in to enquire</a>
+                            <a href="{% url 'accounts:register' %}" class="btn-secondary w-full justify-center text-xs">Create Student Account</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<!-- Leaflet Map Initialization Script -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var lat = {{ property.latitude|default:"25.4358" }};
+    var lng = {{ property.longitude|default:"81.8463" }};
+    var title = "{{ property.name|escapejs }}";
+    var address = "{{ property.address|escapejs }}, {{ property.city|escapejs }}";
+    var rent = "₹{{ property.min_monthly_rent|intcomma }}/mo";
+    var nearbyPois = {{ nearby_pois_json|safe }};
+
+    var map = L.map('property-map').setView([lat, lng], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Custom Property Marker (Navy badge with price)
+    var propIcon = L.divIcon({
+        className: 'custom-property-pin',
+        html: '<div style="background:#081a33;color:white;padding:5px 10px;border-radius:12px;font-weight:800;font-size:11px;border:2px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.35);white-space:nowrap;display:flex;align-items:center;gap:4px;"><span>🏠</span> <span>' + rent + '</span></div>',
+        iconSize: [80, 28],
+        iconAnchor: [40, 14]
+    });
+
+    L.marker([lat, lng], { icon: propIcon }).addTo(map)
+        .bindPopup('<div style="font-family:sans-serif;padding:4px;"><p style="font-weight:800;font-size:13px;margin:0 0 4px 0;color:#081a33;">' + title + '</p><p style="font-size:11px;color:#64748b;margin:0;">' + address + '</p><p style="margin:6px 0 0 0;font-weight:700;color:#059669;font-size:12px;">Starting at ' + rent + '</p></div>')
+        .openPopup();
+
+    // Add POI markers
+    if (nearbyPois && nearbyPois.length) {
+        nearbyPois.forEach(function (poi) {
+            if (poi.latitude && poi.longitude) {
+                var iconHtml = '<div style="background:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.25);border:1.5px solid #94a3b8;font-size:13px;">' + (poi.icon || '📍') + '</div>';
+                var poiIcon = L.divIcon({
+                    className: 'custom-poi-pin',
+                    html: iconHtml,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13]
+                });
+
+                L.marker([poi.latitude, poi.longitude], { icon: poiIcon }).addTo(map)
+                    .bindPopup('<div style="font-family:sans-serif;padding:2px;"><p style="font-weight:700;font-size:12px;margin:0;color:#0f172a;">' + (poi.icon || '') + ' ' + poi.name + '</p><p style="font-size:11px;color:#64748b;margin:2px 0 0 0;">' + poi.category + ' · <strong>' + poi.distance_text + '</strong> from stay</p></div>');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

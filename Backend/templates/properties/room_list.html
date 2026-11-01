@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Manage Rooms - {{ property.name }} | {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="border-b border-slate-200 bg-white py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <nav class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-2">
+                    <a href="{% url 'properties:owner_list' %}" class="hover:text-brand-700">My Properties</a>
+                    <span>/</span>
+                    <span class="text-slate-800">{{ property.name }}</span>
+                    <span>/</span>
+                    <span class="text-brand-700">Rooms</span>
+                </nav>
+                <h1 class="text-2xl font-extrabold tracking-tight text-brand-950 sm:text-3xl">Room Configurations & Beds</h1>
+                <p class="mt-1 text-sm text-slate-600">Configure single, double, triple or sharing room types and manage live bed availability for {{ property.name }}.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{% url 'properties:gallery_manage' property.slug %}" class="btn-secondary text-xs">Manage Photos</a>
+                <a href="{% url 'properties:edit' property.slug %}" class="btn-secondary text-xs">Edit Property</a>
+                <a href="{{ property.get_absolute_url }}" class="btn-primary text-xs" target="_blank">View Live Page</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-10">
+    <div class="mx-auto max-w-7xl space-y-10 px-4 sm:px-6 lg:px-8">
+        <!-- Room Inventory Overview -->
+        <div class="grid gap-4 sm:grid-cols-3">
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Room Configurations</p>
+                <p class="mt-2 text-3xl font-extrabold text-brand-950">{{ rooms|length }}</p>
+                <p class="mt-1 text-xs text-slate-500">Configured room categories</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Bed Capacity</p>
+                <p class="mt-2 text-3xl font-extrabold text-brand-950">{{ property.total_beds_count }}</p>
+                <p class="mt-1 text-xs text-slate-500">Across all room types</p>
+            </div>
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm">
+                <p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Available Vacant Beds</p>
+                <p class="mt-2 text-3xl font-extrabold text-emerald-900">{{ property.total_available_beds }}</p>
+                <p class="mt-1 text-xs text-emerald-700">Ready for student bookings</p>
+            </div>
+        </div>
+
+        <div class="grid gap-8 lg:grid-cols-[1.5fr_1fr] items-start">
+            <!-- Left: Current Room Configurations -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-extrabold text-brand-950">Configured Rooms ({{ rooms|length }})</h2>
+                    <span class="text-xs text-slate-500">Updated in real-time</span>
+                </div>
+
+                {% if rooms %}
+                    <div class="space-y-4">
+                        {% for room in rooms %}
+                            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand-200 hover:shadow-md">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <h3 class="text-base font-extrabold text-brand-950">{{ room.room_type }}</h3>
+                                            <span class="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-800">{{ room.get_occupancy_display }}</span>
+                                            <span class="rounded-full {% if room.air_conditioning == 'ac' %}bg-sky-50 text-sky-800{% else %}bg-slate-100 text-slate-700{% endif %} px-2.5 py-0.5 text-xs font-bold">{{ room.get_air_conditioning_display }}</span>
+                                            <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700">{{ room.get_bathroom_type_display }}</span>
+                                        </div>
+                                        <p class="mt-2 text-sm text-slate-600">
+                                            <span class="text-lg font-extrabold text-brand-950">₹{{ room.monthly_rent|intcomma }}</span><span class="text-xs text-slate-500"> /month</span>
+                                            {% if room.security_deposit %} · Deposit: ₹{{ room.security_deposit|intcomma }}{% endif %}
+                                        </p>
+                                    </div>
+                                    <span class="badge shrink-0 {% if room.is_available and room.available_beds > 0 %}badge-available{% else %}badge-waitlist{% endif %}">
+                                        {% if room.is_available and room.available_beds > 0 %}{{ room.available_beds }} Beds Available{% else %}Full / Unavailable{% endif %}
+                                    </span>
+                                </div>
+
+                                <!-- Quick Live Bed & Rent Updater -->
+                                <form method="post" action="{% url 'properties:room_update_beds' property.slug room.pk %}" class="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                                    {% csrf_token %}
+                                    <div class="w-32">
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Available Beds</label>
+                                        <input type="number" name="available_beds" value="{{ room.available_beds }}" min="0" max="{{ room.total_beds }}" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                                    </div>
+                                    <div class="w-32">
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Rent (₹/mo)</label>
+                                        <input type="number" name="monthly_rent" value="{{ room.monthly_rent }}" min="1" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                                    </div>
+                                    <button type="submit" class="btn-secondary py-1.5 px-3 text-xs font-bold">Update</button>
+                                    <div class="ml-auto flex items-center gap-2">
+                                        <a href="{% url 'properties:room_edit' property.slug room.pk %}" class="text-xs font-bold text-brand-700 hover:text-brand-900">Edit details</a>
+                                        <span class="text-slate-300">|</span>
+                                        <button type="button" onclick="if(confirm('Delete {{ room.room_type }}?')) { document.getElementById('delete-room-{{ room.pk }}').submit(); }" class="text-xs font-bold text-rose-600 hover:text-rose-800">Delete</button>
+                                    </div>
+                                </form>
+
+                                <form id="delete-room-{{ room.pk }}" method="post" action="{% url 'properties:room_delete' property.slug room.pk %}" class="hidden">
+                                    {% csrf_token %}
+                                </form>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                        <svg class="mx-auto h-12 w-12 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                        </svg>
+                        <h3 class="mt-3 text-base font-bold text-slate-800">No rooms added yet</h3>
+                        <p class="mt-1 text-xs text-slate-500">Add your first room configuration on the right to start receiving bookings.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Right: Add Room Configuration Form -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-100 text-xs font-bold text-accent-900">+</span>
+                    <h2 class="text-base font-extrabold text-brand-950">Add Room Configuration</h2>
+                </div>
+                <p class="mt-1 text-xs text-slate-500">Configure room types like Single AC, Double Sharing, etc.</p>
+
+                <form method="post" class="mt-5 space-y-4" novalidate>
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="{{ form.room_type.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">Room Type Name *</label>
+                        {{ form.room_type }}
+                        {% if form.room_type.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.room_type.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="{{ form.occupancy.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">Occupancy *</label>
+                            {{ form.occupancy }}
+                        </div>
+                        <div>
+                            <label for="{{ form.monthly_rent.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">Monthly Rent (₹) *</label>
+                            {{ form.monthly_rent }}
+                            {% if form.monthly_rent.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.monthly_rent.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="{{ form.total_beds.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">Total Beds *</label>
+                            {{ form.total_beds }}
+                        </div>
+                        <div>
+                            <label for="{{ form.available_beds.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">Available Beds *</label>
+                            {{ form.available_beds }}
+                            {% if form.available_beds.errors %}<p class="mt-1 text-xs text-rose-600">{{ form.available_beds.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="{{ form.bathroom_type.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">Bathroom *</label>
+                            {{ form.bathroom_type }}
+                        </div>
+                        <div>
+                            <label for="{{ form.air_conditioning.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">AC / Non-AC *</label>
+                            {{ form.air_conditioning }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="{{ form.security_deposit.id_for_label }}" class="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">Security Deposit (₹)</label>
+                        {{ form.security_deposit }}
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-2">
+                        {{ form.is_available }}
+                        <label for="{{ form.is_available.id_for_label }}" class="text-xs font-semibold text-slate-700">Room is currently open for booking</label>
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full justify-center">Add Room</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
