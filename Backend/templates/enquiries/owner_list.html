@@ -1,57 +1,193 @@
 {% extends "base.html" %}
+{% load humanize %}
 
-{% block title %}Student enquiries | {{ site_name }}{% endblock %}
+{% block title %}Student Enquiries | {{ site_name }}{% endblock %}
 
 {% block content %}
 <section class="border-b border-slate-200 bg-white py-10">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="text-sm font-bold uppercase tracking-wider text-accent-600">Property owner</p>
-                <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-950">Student enquiries</h1>
-                <p class="mt-2 text-sm text-slate-600">Review questions and update each enquiry status for your properties.</p>
+                <p class="text-xs font-bold uppercase tracking-wider text-accent-600">Property Owner Dashboard</p>
+                <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-950">Student Enquiries</h1>
+                <p class="mt-2 text-sm text-slate-600">Review, contact, accept or reject student enquiries for your listed PGs and hostels.</p>
             </div>
-            <a href="{% url 'properties:owner_list' %}" class="btn-secondary">Manage properties</a>
+            <a href="{% url 'properties:owner_list' %}" class="btn-secondary">Manage Properties</a>
+        </div>
+
+        <!-- Status Filter Tabs -->
+        <div class="mt-6 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-5 text-xs font-bold">
+            <a href="{% url 'enquiries:owner_list' %}" class="rounded-xl px-3.5 py-1.5 transition {% if not status_filter %}bg-brand-950 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                All ({{ counts.all }})
+            </a>
+            <a href="{% url 'enquiries:owner_list' %}?status=pending" class="rounded-xl px-3.5 py-1.5 transition {% if status_filter == 'pending' %}bg-amber-500 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Pending ({{ counts.pending }})
+            </a>
+            <a href="{% url 'enquiries:owner_list' %}?status=contacted" class="rounded-xl px-3.5 py-1.5 transition {% if status_filter == 'contacted' %}bg-blue-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Contacted ({{ counts.contacted }})
+            </a>
+            <a href="{% url 'enquiries:owner_list' %}?status=accepted" class="rounded-xl px-3.5 py-1.5 transition {% if status_filter == 'accepted' %}bg-emerald-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Accepted ({{ counts.accepted }})
+            </a>
+            <a href="{% url 'enquiries:owner_list' %}?status=rejected" class="rounded-xl px-3.5 py-1.5 transition {% if status_filter == 'rejected' %}bg-rose-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Rejected ({{ counts.rejected }})
+            </a>
+            <a href="{% url 'enquiries:owner_list' %}?status=cancelled" class="rounded-xl px-3.5 py-1.5 transition {% if status_filter == 'cancelled' %}bg-slate-700 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Cancelled ({{ counts.cancelled }})
+            </a>
         </div>
     </div>
 </section>
 
 <section class="bg-slate-50 py-10">
-    <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {% if enquiries %}
-            {% for enquiry in enquiries %}
-                <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <a href="{{ enquiry.property.get_absolute_url }}" class="text-lg font-extrabold text-brand-950 hover:text-brand-700">{{ enquiry.property.name }}</a>
-                                <span class="badge {% if enquiry.status == 'pending' %}badge-limited{% elif enquiry.status == 'contacted' %}badge-available{% else %}badge-waitlist{% endif %}">{{ enquiry.get_status_display }}</span>
+            <div class="space-y-5">
+                {% for enquiry in enquiries %}
+                    <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+                        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="min-w-0 flex-1">
+                                <!-- Top Row: Property & Status -->
+                                <div class="flex flex-wrap items-center gap-2.5">
+                                    <a href="{{ enquiry.property.get_absolute_url }}" class="text-lg font-extrabold text-brand-950 hover:text-brand-700">
+                                        {{ enquiry.property.name }}
+                                    </a>
+                                    <span class="rounded-full px-3 py-0.5 text-xs font-black uppercase tracking-wider
+                                        {% if enquiry.status == 'pending' %}bg-amber-100 text-amber-900 border border-amber-300
+                                        {% elif enquiry.status == 'contacted' %}bg-blue-100 text-blue-900 border border-blue-300
+                                        {% elif enquiry.status == 'accepted' %}bg-emerald-100 text-emerald-900 border border-emerald-300
+                                        {% elif enquiry.status == 'rejected' %}bg-rose-100 text-rose-900 border border-rose-300
+                                        {% else %}bg-slate-100 text-slate-700 border border-slate-300{% endif %}">
+                                        {{ enquiry.get_status_display }}
+                                    </span>
+                                </div>
+
+                                <!-- Student Contact Card (Protected Role-Based Info) -->
+                                <div class="mt-3 flex flex-wrap items-center gap-4 rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-950 text-white text-xs font-extrabold uppercase">
+                                            {{ enquiry.student.get_full_name|slice:":1" }}
+                                        </span>
+                                        <div>
+                                            <p class="text-sm font-extrabold text-slate-900">{{ enquiry.student.get_full_name }}</p>
+                                            <p class="text-xs text-slate-500">{{ enquiry.student.email }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+
+                                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                                        <span>📞 <strong>{{ enquiry.contact_number }}</strong></span>
+                                        {% if enquiry.student_whatsapp_url %}
+                                            <a href="{{ enquiry.student_whatsapp_url }}" target="_blank" class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">
+                                                💬 WhatsApp
+                                            </a>
+                                        {% endif %}
+                                        <a href="tel:{{ enquiry.contact_number }}" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-800 hover:bg-slate-300">
+                                            Call
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Requested Occupancy & Move-in Date -->
+                                <div class="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700">
+                                    {% if enquiry.occupancy and enquiry.occupancy != 'any' %}
+                                        <span class="rounded-lg bg-brand-50 px-2.5 py-1 text-brand-900 border border-brand-200">
+                                            Desired Occupancy: <strong>{{ enquiry.get_occupancy_display }}</strong>
+                                        </span>
+                                    {% endif %}
+                                    {% if enquiry.move_in_date %}
+                                        <span class="rounded-lg bg-accent-50 px-2.5 py-1 text-accent-900 border border-accent-200">
+                                            Preferred Move-in: <strong>{{ enquiry.move_in_date|date:"d M Y" }}</strong>
+                                        </span>
+                                    {% endif %}
+                                    <span class="text-slate-400 text-[11px]">
+                                        Received: {{ enquiry.created_at|date:"d M Y, H:i" }}
+                                    </span>
+                                </div>
+
+                                <!-- Message -->
+                                <div class="mt-3 rounded-2xl border border-slate-100 bg-white p-4">
+                                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Student's Message</p>
+                                    <p class="mt-1 whitespace-pre-line text-xs leading-relaxed text-slate-800">{{ enquiry.message }}</p>
+                                </div>
                             </div>
-                            <p class="mt-2 text-sm font-semibold text-slate-800">{{ enquiry.student.get_full_name }}</p>
-                            <p class="text-xs text-slate-500">{{ enquiry.student.email }}{% if enquiry.student.mobile_number %} · {{ enquiry.student.mobile_number }}{% endif %}</p>
-                            <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">{{ enquiry.message }}</p>
-                            <p class="mt-2 text-xs text-slate-500">Contact provided: {{ enquiry.contact_number }} · {{ enquiry.created_at|date:"d M Y, H:i" }}</p>
+
+                            <!-- Right Column: Owner Accept / Reject / Status Workflow -->
+                            <div class="flex flex-col gap-2 shrink-0 lg:w-64 border-t lg:border-t-0 lg:border-l lg:border-slate-100 lg:pl-6 pt-4 lg:pt-0">
+                                <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Owner Actions</p>
+
+                                {% if enquiry.status != 'cancelled' %}
+                                    <!-- Quick Action Buttons: Accept / Reject / Mark Contacted -->
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <form method="post" action="{% url 'enquiries:update_status' enquiry.pk %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="accept">
+                                            <button type="submit" class="w-full rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 shadow-sm {% if enquiry.status == 'accepted' %}ring-2 ring-emerald-400 ring-offset-1{% endif %}">
+                                                ✓ Accept
+                                            </button>
+                                        </form>
+
+                                        <form method="post" action="{% url 'enquiries:update_status' enquiry.pk %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="reject">
+                                            <button type="submit" class="w-full rounded-xl bg-rose-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-rose-700 shadow-sm {% if enquiry.status == 'rejected' %}ring-2 ring-rose-400 ring-offset-1{% endif %}">
+                                                ✕ Reject
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    {% if enquiry.status != 'contacted' %}
+                                        <form method="post" action="{% url 'enquiries:update_status' enquiry.pk %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="contacted">
+                                            <button type="submit" class="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 transition hover:bg-blue-100">
+                                                Mark as Contacted
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    <!-- Full Status Selector -->
+                                    <form method="post" action="{% url 'enquiries:update_status' enquiry.pk %}" class="mt-2 space-y-1.5 border-t border-slate-100 pt-3">
+                                        {% csrf_token %}
+                                        <label for="status-{{ enquiry.pk }}" class="block text-[11px] font-bold text-slate-600">Update Status</label>
+                                        <div class="flex items-center gap-1.5">
+                                            <select id="status-{{ enquiry.pk }}" name="status" class="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800 shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200">
+                                                {% for value, label in status_choices %}
+                                                    {% if value != 'cancelled' %}
+                                                        <option value="{{ value }}" {% if enquiry.status == value %}selected{% endif %}>{{ label }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn-secondary px-3 py-1.5 text-xs font-bold shrink-0">
+                                                Save
+                                            </button>
+                                        </div>
+                                    </form>
+                                {% else %}
+                                    <div class="rounded-xl bg-slate-100 p-3 text-center text-xs text-slate-600 font-semibold">
+                                        This enquiry was cancelled by the student.
+                                    </div>
+                                {% endif %}
+
+                                <a href="{{ enquiry.property.get_absolute_url }}" class="text-center text-xs font-semibold text-slate-500 hover:text-brand-700 mt-1">
+                                    View property listing &rarr;
+                                </a>
+                            </div>
                         </div>
-                        <form method="post" action="{% url 'enquiries:update_status' enquiry.pk %}" class="flex shrink-0 items-end gap-2">
-                            {% csrf_token %}
-                            <div>
-                                <label for="status-{{ enquiry.pk }}" class="mb-1 block text-xs font-semibold text-slate-600">Enquiry status</label>
-                                <select id="status-{{ enquiry.pk }}" name="status" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200">
-                                    {% for value, label in status_choices %}
-                                        <option value="{{ value }}" {% if enquiry.status == value %}selected{% endif %}>{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="submit" class="btn-primary">Update</button>
-                        </form>
-                    </div>
-                </article>
-            {% endfor %}
+                    </article>
+                {% endfor %}
+            </div>
         {% else %}
-            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-                <h2 class="text-xl font-extrabold text-brand-950">No enquiries yet</h2>
-                <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">Student enquiries for your properties will appear here.</p>
-                <a href="{% url 'properties:owner_list' %}" class="btn-primary mt-5">Manage properties</a>
+            <div class="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
+                <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 text-xl font-bold">✉</span>
+                <h2 class="mt-4 text-xl font-extrabold text-brand-950">
+                    {% if status_filter %}No {{ status_filter }} student enquiries found{% else %}No student enquiries yet{% endif %}
+                </h2>
+                <p class="mx-auto mt-2 max-w-md text-xs leading-relaxed text-slate-500">
+                    When students submit enquiries for your listings, they will appear here with contact details, desired occupancy and preferred move-in dates.
+                </p>
+                <a href="{% url 'properties:owner_list' %}" class="btn-primary mt-6">Manage Properties</a>
             </div>
         {% endif %}
     </div>

@@ -10,11 +10,13 @@ class EnquiryAdmin(admin.ModelAdmin):
     list_display = (
         "student",
         "property",
+        "occupancy",
+        "move_in_date",
         "status",
         "contact_number",
         "created_at",
     )
-    list_filter = ("status", "created_at")
+    list_filter = ("status", "occupancy", "created_at")
     search_fields = (
         "student__email",
         "student__full_name",

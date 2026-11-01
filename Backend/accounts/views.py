@@ -76,16 +76,19 @@ def dashboard(request):
             },
         )
         properties = Property.objects.filter(owner=user)
+        enquiries_qs = Enquiry.objects.filter(property__owner=user).select_related(
+            "property", "student"
+        )
+        pending_enquiry_count = enquiries_qs.filter(status=Enquiry.Status.PENDING).count()
         context.update(
             {
                 "profile": profile,
                 "properties": properties[:5],
                 "property_count": properties.count(),
                 "active_property_count": properties.filter(is_active=True).count(),
-                "enquiries": Enquiry.objects.filter(property__owner=user).select_related(
-                    "property", "student"
-                ),
-                "enquiry_count": Enquiry.objects.filter(property__owner=user).count(),
+                "enquiries": enquiries_qs,
+                "enquiry_count": enquiries_qs.count(),
+                "pending_enquiry_count": pending_enquiry_count,
             }
         )
         context["profile_is_complete"] = bool(
@@ -97,13 +100,17 @@ def dashboard(request):
         template_name = "accounts/dashboard_owner.html"
     else:
         favourites = Favourite.objects.filter(student=user).select_related("property")
-        enquiries = Enquiry.objects.filter(student=user).select_related("property")
+        enquiries_qs = Enquiry.objects.filter(student=user).select_related("property")
+        pending_enquiry_count = enquiries_qs.filter(status=Enquiry.Status.PENDING).count()
+        accepted_enquiry_count = enquiries_qs.filter(status=Enquiry.Status.ACCEPTED).count()
         context.update(
             {
                 "favourites": favourites[:4],
                 "favourite_count": favourites.count(),
-                "enquiries": enquiries[:5],
-                "enquiry_count": enquiries.count(),
+                "enquiries": enquiries_qs[:5],
+                "enquiry_count": enquiries_qs.count(),
+                "pending_enquiry_count": pending_enquiry_count,
+                "accepted_enquiry_count": accepted_enquiry_count,
             }
         )
         template_name = "accounts/dashboard_student.html"

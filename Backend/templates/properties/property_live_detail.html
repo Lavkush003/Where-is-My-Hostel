@@ -267,21 +267,51 @@
                 <!-- ENQUIRY FORM FOR STUDENTS -->
                 {% if user.is_authenticated and user.is_student %}
                     <div id="enquiry" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-                        <div class="flex items-center gap-2">
-                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-500 text-white font-bold">✉</span>
-                            <div>
-                                <h2 class="text-xl font-extrabold text-brand-950">Submit an Enquiry</h2>
-                                <p class="text-xs text-slate-500">Send your query directly to the owner. Track the status from your student dashboard.</p>
+                        {% if active_enquiry %}
+                            <div class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-5">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-white text-xs font-bold">✓</span>
+                                        <h3 class="text-base font-extrabold text-emerald-950">Active Enquiry Submitted</h3>
+                                    </div>
+                                    <span class="badge {% if active_enquiry.status == 'pending' %}badge-limited{% elif active_enquiry.status == 'accepted' or active_enquiry.status == 'contacted' %}badge-available{% else %}badge-waitlist{% endif %}">
+                                        {{ active_enquiry.get_status_display }}
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-xs text-emerald-800 leading-relaxed">
+                                    You sent an active enquiry for this stay on {{ active_enquiry.created_at|date:"d M Y, H:i" }}.
+                                    {% if active_enquiry.move_in_date %}<br>Preferred Move-in: <strong>{{ active_enquiry.move_in_date|date:"d M Y" }}</strong>{% endif %}
+                                    {% if active_enquiry.occupancy and active_enquiry.occupancy != 'any' %} · Occupancy: <strong>{{ active_enquiry.get_occupancy_display }}</strong>{% endif %}
+                                </p>
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    <a href="{% url 'enquiries:student_list' %}" class="btn-primary text-xs py-2 px-4">Track in My Enquiries &rarr;</a>
+                                    {% if active_enquiry.owner_whatsapp_url %}
+                                        <a href="{{ active_enquiry.owner_whatsapp_url }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-700">
+                                            💬 Chat on WhatsApp
+                                        </a>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
+                        {% else %}
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-500 text-white font-bold">✉</span>
+                                <div>
+                                    <h2 class="text-xl font-extrabold text-brand-950">Submit an Enquiry</h2>
+                                    <p class="text-xs text-slate-500">Send your query directly to the owner. Track the status from your student dashboard.</p>
+                                </div>
+                            </div>
 
-                        <form method="post" action="{% url 'enquiries:create' property.slug %}" class="mt-6 space-y-4" novalidate>
-                            {% csrf_token %}
-                            {% for field in enquiry_form %}
-                                {% include "partials/form_field.html" with field=field %}
-                            {% endfor %}
-                            <button type="submit" class="btn-primary w-full sm:w-auto">Send Enquiry to Owner</button>
-                        </form>
+                            <form method="post" action="{% url 'enquiries:create' property.slug %}" class="mt-6 space-y-4" novalidate>
+                                {% csrf_token %}
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    {% include "partials/form_field.html" with field=enquiry_form.move_in_date %}
+                                    {% include "partials/form_field.html" with field=enquiry_form.occupancy %}
+                                </div>
+                                {% include "partials/form_field.html" with field=enquiry_form.contact_number %}
+                                {% include "partials/form_field.html" with field=enquiry_form.message %}
+                                <button type="submit" class="btn-primary w-full sm:w-auto">Send Enquiry to Owner</button>
+                            </form>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>

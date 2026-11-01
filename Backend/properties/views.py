@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from accounts.decorators import owner_required, student_required
 from accounts.models import OwnerProfile
 from enquiries.forms import EnquiryForm
+from enquiries.models import Enquiry
 
 from .demo_data import FEATURED_PROPERTIES
 from .forms import PropertyForm, PropertyImageForm, RoomForm
@@ -575,13 +576,25 @@ def property_detail(request, slug):
 
         is_favourite = False
         enquiry_form = None
+        active_enquiry = None
         if request.user.is_authenticated and request.user.is_student:
             is_favourite = Favourite.objects.filter(
                 student=request.user,
                 property=property_obj,
             ).exists()
+            active_enquiry = Enquiry.objects.filter(
+                student=request.user,
+                property=property_obj,
+                status__in=[
+                    Enquiry.Status.PENDING,
+                    Enquiry.Status.CONTACTED,
+                    Enquiry.Status.ACCEPTED,
+                ],
+            ).first()
             enquiry_form = EnquiryForm(
-                initial={"contact_number": request.user.mobile_number}
+                initial={"contact_number": request.user.mobile_number},
+                student=request.user,
+                property_obj=property_obj,
             )
 
         gallery_images = property_obj.images.all()
@@ -603,6 +616,7 @@ def property_detail(request, slug):
                 "property": property_obj,
                 "owner_profile": owner_profile,
                 "is_favourite": is_favourite,
+                "active_enquiry": active_enquiry,
                 "enquiry_form": enquiry_form,
                 "gallery_images": gallery_images,
                 "rooms": rooms,

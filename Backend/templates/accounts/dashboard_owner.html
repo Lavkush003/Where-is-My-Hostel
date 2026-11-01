@@ -22,6 +22,27 @@
 
 <section class="bg-slate-50 py-10">
     <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+        {% if pending_enquiry_count > 0 %}
+            <div class="flex flex-col gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white font-black text-lg">
+                        ✉
+                    </span>
+                    <div>
+                        <p class="font-extrabold text-amber-950">
+                            You have {{ pending_enquiry_count }} pending student enquir{{ pending_enquiry_count|pluralize:"y,ies" }}!
+                        </p>
+                        <p class="mt-0.5 text-xs text-amber-800">
+                            Students have submitted questions regarding room availability and move-in dates.
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'enquiries:owner_list' %}?status=pending" class="rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 px-4 shadow-sm transition shrink-0 text-center">
+                    Review Pending Enquiries &rarr;
+                </a>
+            </div>
+        {% endif %}
+
         {% if not profile_is_complete %}
             <div class="flex flex-col gap-3 rounded-2xl border border-accent-200 bg-accent-50 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -91,10 +112,30 @@
                     {% for enquiry in enquiries|slice:":5" %}
                         <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <p class="font-bold text-slate-900">{{ enquiry.student.get_full_name }}</p>
-                                <p class="mt-1 text-xs text-slate-500">{{ enquiry.property.name }} · {{ enquiry.created_at|date:"d M Y" }}</p>
+                                <div class="flex items-center gap-2">
+                                    <p class="font-extrabold text-slate-900">{{ enquiry.student.get_full_name }}</p>
+                                    <span class="text-xs text-slate-500">· {{ enquiry.property.name }}</span>
+                                </div>
+                                <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600 font-semibold">
+                                    <span>📞 {{ enquiry.contact_number }}</span>
+                                    {% if enquiry.occupancy and enquiry.occupancy != 'any' %}
+                                        <span>· 🛏️ {{ enquiry.get_occupancy_display }}</span>
+                                    {% endif %}
+                                    {% if enquiry.move_in_date %}
+                                        <span>· 📅 Move-in: {{ enquiry.move_in_date|date:"d M Y" }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <span class="badge {% if enquiry.status == 'pending' %}badge-limited{% elif enquiry.status == 'contacted' %}badge-available{% else %}badge-waitlist{% endif %}">{{ enquiry.get_status_display }}</span>
+                            <div class="flex items-center gap-2 shrink-0">
+                                {% if enquiry.student_whatsapp_url %}
+                                    <a href="{{ enquiry.student_whatsapp_url }}" target="_blank" class="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">
+                                        💬 WhatsApp
+                                    </a>
+                                {% endif %}
+                                <span class="badge {% if enquiry.status == 'pending' %}badge-limited{% elif enquiry.status == 'accepted' or enquiry.status == 'contacted' %}badge-available{% else %}badge-waitlist{% endif %}">
+                                    {{ enquiry.get_status_display }}
+                                </span>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
