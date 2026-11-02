@@ -11,6 +11,65 @@
     <meta http-equiv="Expires" content="0">
     <title>{% block title %}{{ site_name }}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    <script>
+        window.MAPBOX_ACCESS_TOKEN = "{{ mapbox_access_token|default:''|escapejs }}";
+
+        window.createAppTileLayer = function(map, customOptions) {
+            var token = (typeof window.MAPBOX_ACCESS_TOKEN === "string") ? window.MAPBOX_ACCESS_TOKEN.trim() : "";
+            var defaultLayer;
+
+            // CARTO Voyager: high-contrast, modern, non-blocking raster basemap
+            var cartoVoyager = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+                Object.assign({
+                    maxZoom: 20,
+                    subdomains: "abcd",
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                }, customOptions || {})
+            );
+
+            if (token && token.length > 10) {
+                var mapboxStreets = L.tileLayer(
+                    "https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=" + encodeURIComponent(token),
+                    Object.assign({
+                        maxZoom: 22,
+                        tileSize: 512,
+                        zoomOffset: -1,
+                        attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    }, customOptions || {})
+                );
+
+                var mapboxSatellite = L.tileLayer(
+                    "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/{z}/{x}/{y}?access_token=" + encodeURIComponent(token),
+                    Object.assign({
+                        maxZoom: 22,
+                        tileSize: 512,
+                        zoomOffset: -1,
+                        attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    }, customOptions || {})
+                );
+
+                defaultLayer = mapboxStreets;
+                if (map) {
+                    defaultLayer.addTo(map);
+                    try {
+                        L.control.layers({
+                            "Mapbox Streets": mapboxStreets,
+                            "Satellite": mapboxSatellite,
+                            "Clean Streets": cartoVoyager
+                        }, null, { position: "topright" }).addTo(map);
+                    } catch (e) {}
+                }
+            } else {
+                defaultLayer = cartoVoyager;
+                if (map) {
+                    defaultLayer.addTo(map);
+                }
+            }
+
+            return defaultLayer;
+        };
+    </script>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="flex min-h-screen flex-col bg-slate-50 text-slate-900 antialiased">

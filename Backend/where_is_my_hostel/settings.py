@@ -257,6 +257,7 @@ CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "").strip()
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL", "no-reply@whereismyhostel.example"
 ).strip()
+MAPBOX_ACCESS_TOKEN = os.getenv("MAPBOX_ACCESS_TOKEN", "").strip()
 
 
 # Production security defaults

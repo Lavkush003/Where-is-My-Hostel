@@ -72,7 +72,7 @@ DEMO_PROPERTIES = [
         "facilities": "Wi-Fi, 3 Daily Meals, RO Water, Study Desk, CCTV, Daily Housekeeping, Power Backup",
         "description": "Safe, student-friendly boys PG located in Civil Lines, within walking distance from Prayagraj Junction and coaching institutes. Offers nutritious homestyle food, 24/7 security, and dedicated quiet study areas.",
         "contact_number": "9876543210",
-        "seed_image": "room_single_cozy.jpg",
+        "seed_image": "pg_prayagraj.jpg",
         "rooms": [
             {
                 "room_type": "Deluxe Single Room",
@@ -123,7 +123,7 @@ DEMO_PROPERTIES = [
         "facilities": "Wi-Fi, 4 Daily Meals, Biometric Entry, Female Warden, Air Conditioning, Study Room, Laundry",
         "description": "Premium girls hostel directly opposite Allen coaching campus in Rajeev Gandhi Nagar. Features round-the-clock female warden supervision, biometric entry, hygienic buffet meals, and doctor-on-call.",
         "contact_number": "9876543210",
-        "seed_image": "room_twin_sharing.jpg",
+        "seed_image": "pg_kota.jpg",
         "rooms": [
             {
                 "room_type": "Comfort Twin AC",
@@ -291,6 +291,47 @@ DEMO_PROPERTIES = [
         "rooms": [
             {
                 "room_type": "Twin Sharing AC",
+                "occupancy": Room.Occupancy.DOUBLE,
+                "monthly_rent": 5500,
+                "security_deposit": 5500,
+                "total_beds": 2,
+                "available_beds": 2,
+                "bathroom_type": Room.BathroomType.ATTACHED,
+                "air_conditioning": Room.AirConditioning.AC,
+            },
+        ],
+    },
+    {
+        "name": "Awadh Elite PG & Hostel",
+        "city": "Lucknow",
+        "state": "Uttar Pradesh",
+        "locality": "Hazratganj",
+        "address": "14/2 Park Road, Near Hazratganj Metro Station, Lucknow",
+        "pincode": "226001",
+        "latitude": 26.8500,
+        "longitude": 80.9499,
+        "property_type": Property.PropertyType.PG,
+        "gender_preference": Property.GenderPreference.UNISEX,
+        "monthly_rent": 5500,
+        "deposit": "One month rent",
+        "available_from": date.today(),
+        "facilities": "Wi-Fi, 3 Daily Meals, AC, Power Backup, CCTV, RO Water, Housekeeping",
+        "description": "Centrally located PG for students and aspirants in Hazratganj, within 600m from Hazratganj Metro and key coaching centres. Comfortable furnished rooms and home-cooked meals.",
+        "contact_number": "9876543210",
+        "seed_image": "pg_lucknow.jpg",
+        "rooms": [
+            {
+                "room_type": "Executive Single AC",
+                "occupancy": Room.Occupancy.SINGLE,
+                "monthly_rent": 8500,
+                "security_deposit": 8500,
+                "total_beds": 1,
+                "available_beds": 1,
+                "bathroom_type": Room.BathroomType.ATTACHED,
+                "air_conditioning": Room.AirConditioning.AC,
+            },
+            {
+                "room_type": "Standard Twin Sharing",
                 "occupancy": Room.Occupancy.DOUBLE,
                 "monthly_rent": 5500,
                 "security_deposit": 5500,

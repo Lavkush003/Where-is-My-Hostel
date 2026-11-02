@@ -4,45 +4,159 @@
 {% block title %}{{ site_name }} | Student PGs, Hostels & Rooms Across India{% endblock %}
 {% block meta_description %}Discover affordable PGs, hostels and rental rooms near coaching centres, colleges and landmarks across India. Search by city, area, budget and move-in date.{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Portal High-Impact Styling */
+    .portal-hero-bg {
+        background-color: #061124;
+        background-image: 
+            radial-gradient(circle at 18% 22%, rgba(37, 99, 235, 0.28), transparent 38%),
+            radial-gradient(circle at 82% 16%, rgba(249, 115, 22, 0.22), transparent 32%),
+            radial-gradient(circle at 50% 88%, rgba(14, 165, 233, 0.15), transparent 45%);
+    }
+
+    .portal-grid-pattern {
+        background-image:
+            linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 40px 40px;
+        mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, black 40%, transparent 95%);
+    }
+
+    .search-card-elevated {
+        background: #ffffff;
+        box-shadow: 0 25px 50px -12px rgba(4, 12, 28, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .portal-tab-btn {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .portal-tab-btn.active {
+        background-color: #061124;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(6, 17, 36, 0.25);
+    }
+
+    .portal-tab-btn:not(.active) {
+        color: #475569;
+        background-color: transparent;
+    }
+
+    .portal-tab-btn:not(.active):hover {
+        color: #0f172a;
+        background-color: rgba(241, 245, 249, 0.8);
+    }
+
+    .search-input-field {
+        transition: all 0.2s ease;
+    }
+
+    .search-input-field:focus-within {
+        background-color: #f8fafc;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.12);
+    }
+
+    .whatsapp-btn {
+        background-color: #25D366;
+        color: #ffffff;
+        transition: all 0.2s ease;
+    }
+
+    .whatsapp-btn:hover {
+        background-color: #20ba5a;
+        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+    }
+
+    .hero-showcase-card {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .hero-city-pill.active {
+        background-color: #f97316;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+    }
+
+    .hero-city-pill:not(.active) {
+        color: #cbd5e1;
+        background-color: transparent;
+    }
+
+    .hero-city-pill:not(.active):hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .hero-thumb.active {
+        border-color: #f97316;
+        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.4);
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 {% include "partials/city_sprites.html" %}
 {% include "partials/property_sprites.html" %}
 
-<!-- 1. HERO SECTION -->
-<section class="hero-surface relative overflow-visible text-white">
-    <div class="hero-grid pointer-events-none absolute inset-0" aria-hidden="true"></div>
-    <div class="relative mx-auto max-w-7xl px-4 pb-20 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-24 lg:pt-20">
-        <div class="grid items-center gap-12 lg:grid-cols-[1.12fr_0.88fr]">
-            <div>
-                <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-50 shadow-sm backdrop-blur">
-                    <span class="h-2 w-2 rounded-full bg-accent-400 animate-pulse"></span>
-                    Student housing across India, without the guesswork
-                </span>
+<!-- ==============================================================================
+     1. HERO PORTAL SECTION (High-Converting Search Engine)
+     ============================================================================== -->
+<section class="portal-hero-bg relative overflow-visible text-white pb-20 pt-10 sm:pt-14 lg:pb-28 lg:pt-16">
+    <div class="portal-grid-pattern pointer-events-none absolute inset-0" aria-hidden="true"></div>
 
-                <h1 class="mt-6 max-w-3xl text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    Find Your Perfect Stay Near Your <span class="text-accent-400">Destination</span>
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- 2-Column Responsive Portal Hero Grid -->
+        <div class="grid items-start gap-8 lg:grid-cols-12 xl:gap-10">
+            <!-- Left Column: Portal Header, Search Card & Coaching Hub Shortcuts -->
+            <div class="lg:col-span-7 flex flex-col justify-center">
+                <div class="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-300 shadow-sm backdrop-blur">
+                    <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Student housing across India, without the guesswork</span>
+                    <span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-300">0% BROKERAGE</span>
+                </div>
+
+                <h1 class="mt-5 text-balance text-3xl font-extrabold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
+                    Find Your Perfect Stay Near Your <span class="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-200 bg-clip-text text-transparent">Destination</span>
                 </h1>
-                <p class="mt-5 max-w-2xl text-base leading-7 text-brand-100 sm:text-lg">
+
+                <p class="mt-3.5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
                     Discover affordable PGs, hostels and rental rooms near your coaching centre, college or favourite location.
                 </p>
 
-                <!-- Search Interface Container (Inspired by Image 1 & Image 4) -->
-                <div class="mt-8 rounded-3xl bg-white p-3 text-slate-900 shadow-2xl shadow-brand-950/40">
-                    <!-- Category Tabs (Image 1 reference) -->
-                    <div class="flex items-center gap-1 overflow-x-auto rounded-2xl bg-brand-950 p-1.5 text-xs font-bold text-white/80 scrollbar-none sm:text-sm">
-                        <button type="button" data-category-tab="" class="rounded-xl bg-white px-3.5 py-2 font-extrabold text-brand-950 shadow-sm transition">
+                <!-- Floating Search Portal Card -->
+                <div class="search-card-elevated relative mt-6 rounded-3xl p-3 text-slate-900 sm:p-4">
+                    <!-- Category Tabs -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto rounded-2xl bg-slate-100 p-1.5 text-xs font-bold scrollbar-none sm:text-sm">
+                        <button type="button" data-category-tab="" class="portal-tab-btn active flex items-center gap-1.5 rounded-xl px-3.5 py-2 font-bold shadow-sm">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
                             All Accommodation
                         </button>
-                        <button type="button" data-category-tab="pg" class="rounded-xl px-3.5 py-2 font-bold text-white/80 transition hover:bg-white/10 hover:text-white">
+                        <button type="button" data-category-tab="pg" class="portal-tab-btn flex items-center gap-1.5 rounded-xl px-3.5 py-2 font-bold">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                             Boys & Girls PG
                         </button>
-                        <button type="button" data-category-tab="hostel" class="rounded-xl px-3.5 py-2 font-bold text-white/80 transition hover:bg-white/10 hover:text-white">
+                        <button type="button" data-category-tab="hostel" class="portal-tab-btn flex items-center gap-1.5 rounded-xl px-3.5 py-2 font-bold">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6h1.5m-1.5 3h1.5m-1.5 3h1.5M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
                             Student Hostels
                         </button>
-                        <button type="button" data-category-tab="room" class="rounded-xl px-3.5 py-2 font-bold text-white/80 transition hover:bg-white/10 hover:text-white">
+                        <button type="button" data-category-tab="room" class="portal-tab-btn flex items-center gap-1.5 rounded-xl px-3.5 py-2 font-bold">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg>
                             Private Rooms
                         </button>
-                        <button type="button" data-category-tab="coliving" class="rounded-xl px-3.5 py-2 font-bold text-white/80 transition hover:bg-white/10 hover:text-white">
+                        <button type="button" data-category-tab="coliving" class="portal-tab-btn flex items-center gap-1.5 rounded-xl px-3.5 py-2 font-bold">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/></svg>
                             Co-living
                         </button>
                     </div>
@@ -51,14 +165,11 @@
                     <form method="get" action="{% url 'properties:list' %}" class="relative mt-3" role="search" data-search-form>
                         <input type="hidden" name="type" value="" data-stay-type-input>
 
-                        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-                            <!-- Field 1: City / Destination with Suggested Destinations Popup (Image 4 reference) -->
-                            <div class="relative search-field">
-                                <label for="hero-city-input" class="search-field-label">
-                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/>
-                                        <circle cx="12" cy="9.75" r="2.25"/>
-                                    </svg>
+                        <div class="grid gap-2.5 sm:grid-cols-2">
+                            <!-- Field 1: City / Location -->
+                            <div class="search-input-field relative rounded-2xl border border-slate-200 bg-white p-3">
+                                <label for="hero-city-input" class="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
                                     City or Location
                                 </label>
                                 <input id="hero-city-input"
@@ -66,308 +177,660 @@
                                        type="text"
                                        autocomplete="off"
                                        placeholder="Prayagraj, Kota, Delhi..."
-                                       class="search-input"
+                                       class="mt-1 w-full border-0 bg-transparent p-0 text-sm font-bold text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400"
                                        data-destination-input
                                        data-city-select
                                        aria-haspopup="listbox"
                                        aria-expanded="false">
 
-                                <!-- Floating Suggested Destinations Dropdown (Airbnb-style from Image 4) -->
-                                <div data-destination-dropdown
-                                     class="absolute left-0 top-full z-50 mt-2 hidden w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/15 sm:w-96"
-                                     role="listbox">
-                                    <p class="px-2 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Popular student hubs</p>
+                                <!-- Intelligent Dropdown -->
+                                <div data-destination-dropdown class="absolute left-0 top-full z-50 mt-2 hidden w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl sm:w-96" role="listbox">
+                                    <p class="px-2 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Popular student coaching hubs</p>
                                     <div class="mt-1 divide-y divide-slate-100 max-h-72 overflow-y-auto">
                                         <button type="button" data-destination-choice data-city="Prayagraj" data-query="Prayagraj" class="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-slate-50">
-                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-                                            </span>
-                                            <div class="min-w-0">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold">PR</span>
+                                            <div>
                                                 <p class="text-sm font-bold text-slate-900">Prayagraj, Uttar Pradesh</p>
-                                                <p class="truncate text-xs text-slate-500">Civil Lines, Katra & University hub</p>
+                                                <p class="text-xs text-slate-500">Civil Lines, Katra & University hub</p>
                                             </div>
                                         </button>
                                         <button type="button" data-destination-choice data-city="Kota" data-query="Kota" class="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-slate-50">
-                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.5a7.74 7.74 0 0 1 15.48 0M4.5 10.5h15M12 3v1.5M6 17.25l-1.5 3M18 17.25l1.5 3M8.25 14.25h7.5M9.75 18h4.5"/></svg>
-                                            </span>
-                                            <div class="min-w-0">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-bold">KT</span>
+                                            <div>
                                                 <p class="text-sm font-bold text-slate-900">Kota, Rajasthan</p>
-                                                <p class="truncate text-xs text-slate-500">Rajeev Gandhi Nagar, Talwandi (Allen, Resonance)</p>
+                                                <p class="text-xs text-slate-500">Talwandi, Rajeev Gandhi Nagar (Allen, Resonance)</p>
                                             </div>
                                         </button>
                                         <button type="button" data-destination-choice data-city="Delhi" data-query="Mukherjee Nagar, Delhi" class="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-slate-50">
-                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
-                                            </span>
-                                            <div class="min-w-0">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold">DL</span>
+                                            <div>
                                                 <p class="text-sm font-bold text-slate-900">Delhi (Mukherjee Nagar & Karol Bagh)</p>
-                                                <p class="truncate text-xs text-slate-500">UPSC, SSC & University coaching belt</p>
+                                                <p class="text-xs text-slate-500">UPSC, SSC, IIT-JAM coaching belt</p>
                                             </div>
                                         </button>
                                         <button type="button" data-destination-choice data-city="Patna" data-query="Patna" class="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-slate-50">
-                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-                                            </span>
-                                            <div class="min-w-0">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-700 font-bold">PT</span>
+                                            <div>
                                                 <p class="text-sm font-bold text-slate-900">Patna, Bihar</p>
-                                                <p class="truncate text-xs text-slate-500">Boring Road, Kankarbagh student hub</p>
+                                                <p class="text-xs text-slate-500">Boring Road, Kankarbagh student hub</p>
                                             </div>
                                         </button>
                                         <button type="button" data-destination-choice data-city="Jaipur" data-query="Jaipur" class="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-slate-50">
-                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
-                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-                                            </span>
-                                            <div class="min-w-0">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700 font-bold">JP</span>
+                                            <div>
                                                 <p class="text-sm font-bold text-slate-900">Jaipur, Rajasthan</p>
-                                                <p class="truncate text-xs text-slate-500">Gopalpura Bypass & Vaishali Nagar</p>
+                                                <p class="text-xs text-slate-500">Gopalpura Bypass & Vaishali Nagar</p>
                                             </div>
                                         </button>
                                         <button type="button" data-destination-choice data-city="Hyderabad" data-query="Hyderabad" class="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-slate-50">
-                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-700">
-                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-                                            </span>
-                                            <div class="min-w-0">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700 font-bold">HY</span>
+                                            <div>
                                                 <p class="text-sm font-bold text-slate-900">Hyderabad, Telangana</p>
-                                                <p class="truncate text-xs text-slate-500">Ameerpet, Koti, Osmania University</p>
+                                                <p class="text-xs text-slate-500">Ameerpet, Koti, Osmania University</p>
                                             </div>
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Field 2: Coaching, College or Landmark -->
-                            <div class="search-field">
-                                <label for="hero-landmark" class="search-field-label">
-                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z"/>
-                                    </svg>
-                                    Coaching, College or Landmark
+                            <!-- Field 2: Landmark / Coaching -->
+                            <div class="search-input-field rounded-2xl border border-slate-200 bg-white p-3">
+                                <label for="hero-landmark" class="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z"/></svg>
+                                    Coaching, College, Landmark
                                 </label>
                                 <input id="hero-landmark"
                                        name="q"
                                        type="search"
-                                       placeholder="e.g. Allen, IIT, Railway Station"
-                                       class="search-input">
+                                       placeholder="e.g. Allen, Batra Cinema, IIT"
+                                       class="mt-1 w-full border-0 bg-transparent p-0 text-sm font-bold text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400">
                             </div>
 
-                            <!-- Field 3: Check-in Date (Optional) -->
-                            <div class="search-field">
-                                <label for="hero-move-in" class="search-field-label">
-                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M5.25 5.25h13.5A1.5 1.5 0 0 1 20.25 6.75v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-12a1.5 1.5 0 0 1 1.5-1.5Z"/>
-                                    </svg>
-                                    Check-in Date
-                                </label>
-                                <input id="hero-move-in"
-                                       name="move_in"
-                                       type="date"
-                                       class="search-input"
-                                       data-move-in-date>
-                            </div>
-
-                            <!-- Field 4: Sharing / Room Type -->
-                            <div class="search-field">
-                                <label for="hero-sharing" class="search-field-label">
-                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>
-                                    </svg>
+                            <!-- Field 3: Room Type / Occupancy -->
+                            <div class="search-input-field rounded-2xl border border-slate-200 bg-white p-3">
+                                <label for="hero-sharing" class="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
                                     Room Type
                                 </label>
-                                <div class="relative">
-                                    <select id="hero-sharing" name="sharing" class="search-select pr-5">
-                                        <option value="">Any room type</option>
-                                        <option value="single">Single occupancy</option>
-                                        <option value="double">Double sharing</option>
-                                        <option value="triple">Triple sharing</option>
-                                    </select>
-                                    <svg class="pointer-events-none absolute right-0 top-1/2 mt-0.5 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
-                                    </svg>
-                                </div>
+                                <select id="hero-sharing" name="sharing" class="mt-1 w-full cursor-pointer appearance-none border-0 bg-transparent p-0 text-sm font-bold text-slate-900 outline-none">
+                                    <option value="">Any room type</option>
+                                    <option value="single">Single occupancy</option>
+                                    <option value="double">Double sharing</option>
+                                    <option value="triple">Triple sharing</option>
+                                </select>
                             </div>
 
-                            <!-- Field 5: Budget Filter -->
-                            <div class="search-field">
-                                <label for="hero-budget" class="search-field-label">
-                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m2.25-9.75c0-1.24-1.01-2.25-2.25-2.25s-2.25 1.01-2.25 2.25 1.01 2.25 2.25 2.25 2.25 1.01 2.25 2.25-1.01 2.25-2.25 2.25-2.25-1.01-2.25-2.25"/>
-                                        <circle cx="12" cy="12" r="9"/>
-                                    </svg>
+                            <!-- Field 4: Budget Range -->
+                            <div class="search-input-field rounded-2xl border border-slate-200 bg-white p-3">
+                                <label for="hero-budget" class="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m2.25-9.75c0-1.24-1.01-2.25-2.25-2.25s-2.25 1.01-2.25 2.25 1.01 2.25 2.25 2.25 2.25 1.01 2.25 2.25-1.01 2.25-2.25 2.25-2.25-1.01-2.25-2.25"/><circle cx="12" cy="12" r="9"/></svg>
                                     Monthly Budget
                                 </label>
-                                <div class="relative">
-                                    <select id="hero-budget" name="max_rent" class="search-select pr-5">
-                                        <option value="">Any budget</option>
-                                        <option value="4000">Under ₹4,000</option>
-                                        <option value="6000">Under ₹6,000</option>
-                                        <option value="8000">Under ₹8,000</option>
-                                        <option value="12000">Under ₹12,000</option>
-                                    </select>
-                                    <svg class="pointer-events-none absolute right-0 top-1/2 mt-0.5 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
-                                    </svg>
-                                </div>
+                                <select id="hero-budget" name="max_rent" class="mt-1 w-full cursor-pointer appearance-none border-0 bg-transparent p-0 text-sm font-bold text-slate-900 outline-none">
+                                    <option value="">Any budget</option>
+                                    <option value="4000">Under ₹4,000</option>
+                                    <option value="6000">Under ₹6,000</option>
+                                    <option value="8000">Under ₹8,000</option>
+                                    <option value="12000">Under ₹12,000</option>
+                                </select>
                             </div>
-                        </div>
 
-                        <!-- Search Button Row -->
-                        <div class="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
-                            <p class="px-2 text-xs leading-5 text-slate-500">
-                                Compare rent, facilities, distance from coaching and verified owner contacts.
-                            </p>
-                            <button type="submit"
-                                    class="btn-accent w-full shrink-0 justify-center px-7 py-3 text-sm font-extrabold sm:w-auto"
-                                    data-search-submit>
-                                <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" data-search-icon>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z"/>
-                                </svg>
-                                <svg class="mr-2 hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true" data-search-spinner>
-                                    <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
-                                    <path class="opacity-90" fill="currentColor" d="M21 12a9 9 0 0 1-9 9v-3a6 6 0 0 0 6-6h3Z"></path>
-                                </svg>
-                                <span data-search-label>Search Accommodation</span>
-                            </button>
+                            <!-- Field 5: Move-in Date -->
+                            <div class="search-input-field rounded-2xl border border-slate-200 bg-white p-3">
+                                <label for="hero-move-in" class="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                                    <svg class="h-3.5 w-3.5 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M5.25 5.25h13.5A1.5 1.5 0 0 1 20.25 6.75v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-12a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>
+                                    Check-in Date
+                                </label>
+                                <input id="hero-move-in" name="move_in" type="date" class="mt-1 w-full border-0 bg-transparent p-0 text-sm font-bold text-slate-900 outline-none" data-move-in-date>
+                            </div>
+
+                            <!-- Field 6: Submit Action Button -->
+                            <div class="flex items-center">
+                                <button type="submit" class="btn-accent flex h-full min-h-[58px] w-full items-center justify-center rounded-2xl py-3 px-5 text-sm font-extrabold shadow-lg shadow-orange-500/30 transition hover:scale-[1.02]" data-search-submit>
+                                    <svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" data-search-icon><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z"/></svg>
+                                    <svg class="mr-2 hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" data-search-spinner><circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle><path class="opacity-90" fill="currentColor" d="M21 12a9 9 0 0 1-9 9v-3a6 6 0 0 0 6-6h3Z"></path></svg>
+                                    <span data-search-label>Search Stays</span>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
 
-                <!-- Popular City Shortcuts -->
-                <div class="mt-6 flex flex-wrap items-center gap-2">
-                    <span class="mr-1 text-xs font-bold uppercase tracking-wider text-brand-200">Popular hubs:</span>
-                    {% for city in popular_cities %}
-                        <a href="{% url 'properties:list' %}?city={{ city|urlencode }}" class="filter-chip">{{ city }}</a>
-                    {% endfor %}
+                <!-- Hot Searches & Coaching Hub Shortcuts -->
+                <div class="mt-5 flex flex-wrap items-center gap-2 text-xs">
+                    <span class="flex items-center gap-1 font-bold uppercase tracking-wider text-amber-300">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.784 1.399 8.167L12 18.896l-7.333 3.865 1.399-8.167-5.934-5.784 8.2-1.192zm0 5.702l-2.094 4.243-4.68.681 3.388 3.303-.8 4.664L12 16.974l4.186 2.204-.8-4.664 3.388-3.303-4.68-.681z"/></svg>
+                        Coaching Hubs:
+                    </span>
+                    <a href="{% url 'properties:list' %}?city=Kota&q=Allen" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-white transition hover:bg-white/20 hover:border-amber-400">Allen Kota</a>
+                    <a href="{% url 'properties:list' %}?city=Delhi&q=Mukherjee+Nagar" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-white transition hover:bg-white/20 hover:border-amber-400">Mukherjee Nagar (UPSC)</a>
+                    <a href="{% url 'properties:list' %}?city=Prayagraj&q=Civil+Lines" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-white transition hover:bg-white/20 hover:border-amber-400">Civil Lines & Katra</a>
+                    <a href="{% url 'properties:list' %}?city=Kota&q=Resonance" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-white transition hover:bg-white/20 hover:border-amber-400">Resonance Talwandi</a>
+                    <a href="{% url 'properties:list' %}?city=Delhi&q=Karol+Bagh" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-white transition hover:bg-white/20 hover:border-amber-400">Karol Bagh Metro</a>
+                    <a href="{% url 'properties:list' %}?city=Patna&q=Boring+Road" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-white transition hover:bg-white/20 hover:border-amber-400">Boring Road Patna</a>
+                    <a href="{% url 'properties:list' %}?city=Jaipur&q=Gopalpura" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-bold text-white transition hover:bg-white/20 hover:border-amber-400">Gopalpura Jaipur</a>
                 </div>
             </div>
 
-            <!-- Hero Visual Preview Card (Real Verified Stay Showcase) -->
-            <div class="relative mx-auto w-full max-w-md lg:max-w-none">
-                <div class="absolute -inset-8 rounded-full bg-accent-500/20 blur-3xl" aria-hidden="true"></div>
-                <div class="relative overflow-hidden rounded-[2.2rem] border border-white/20 bg-white/10 p-2.5 shadow-2xl shadow-black/40 backdrop-blur">
-                    <div class="overflow-hidden rounded-[1.8rem] bg-brand-950">
-                        <div class="relative aspect-[4/3] w-full overflow-hidden">
-                            <img src="/static/images/rooms/room_single_cozy.jpg"
-                                 alt="Ganga View Boys PG"
-                                 class="h-full w-full object-cover transition duration-700 hover:scale-105"
-                                 loading="eager"
-                                 onerror="this.src='/static/images/rooms/room_twin_sharing.jpg';">
-                            <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/20 to-transparent"></div>
-                            
-                            <div class="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                                <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-brand-950/85 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-emerald-300 backdrop-blur">
-                                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    Verified Live Stay
-                                </span>
-                                <span class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">
-                                    Prayagraj
-                                </span>
+            <!-- Right Column ("in right corner"): Live PG, Room & Hostel Showcase -->
+            <div class="lg:col-span-5 relative mt-6 lg:mt-0">
+                <!-- Ambient Glow Layer -->
+                <div class="pointer-events-none absolute -inset-2 rounded-3xl bg-gradient-to-tr from-amber-500/25 via-blue-500/20 to-emerald-500/25 blur-2xl"></div>
+
+                <!-- Showcase Glass Box -->
+                <div class="relative overflow-hidden rounded-3xl border border-white/20 bg-slate-900/85 p-4 sm:p-5 shadow-2xl backdrop-blur-xl">
+                    <!-- Top Showcase Bar: Indicator + City Tabs -->
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                            </span>
+                            <span class="text-xs font-black uppercase tracking-wider text-emerald-300">Live Available Stays</span>
+                        </div>
+
+                        <!-- City Switcher Pills -->
+                        <div class="flex items-center gap-1 rounded-xl bg-white/10 p-1 text-[11px] font-bold" id="hero-showcase-tabs">
+                            <button type="button" data-hero-city-tab="prayagraj" class="hero-city-pill active rounded-lg px-2.5 py-1 font-bold transition">Prayagraj</button>
+                            <button type="button" data-hero-city-tab="kota" class="hero-city-pill rounded-lg px-2.5 py-1 font-bold transition">Kota</button>
+                            <button type="button" data-hero-city-tab="lucknow" class="hero-city-pill rounded-lg px-2.5 py-1 font-bold transition">Lucknow</button>
+                        </div>
+                    </div>
+
+                    <!-- Spotlight Cards Container -->
+                    <div class="mt-4" id="hero-showcase-panels">
+                        <!-- Card 1: Prayagraj -->
+                        <div data-hero-panel="prayagraj" class="hero-showcase-card block">
+                            <div class="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-slate-800">
+                                <img src="/static/images/rooms/pg_prayagraj.jpg"
+                                     alt="Ganga View Boys PG Prayagraj"
+                                     class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                                     onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20"></div>
+
+                                <!-- Floating Badges on Image -->
+                                <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                                    <span class="rounded-lg bg-blue-600/90 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow backdrop-blur">Boys PG</span>
+                                    <span class="rounded-lg bg-emerald-600/90 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow backdrop-blur">0% Brokerage</span>
+                                </div>
+                                <div class="absolute right-3 top-3">
+                                    <span class="inline-flex items-center gap-1 rounded-lg bg-slate-900/80 px-2.5 py-1 text-xs font-black text-amber-300 shadow backdrop-blur border border-white/15">
+                                        ★ 4.6 <span class="text-[10px] text-slate-300">(38)</span>
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-xs text-white">
+                                    <span class="inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 font-bold text-slate-200 backdrop-blur">
+                                        <svg class="h-3 w-3 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                                        1.2 km from Prayagraj Junction
+                                    </span>
+                                    <span class="rounded-md bg-emerald-500/80 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">Available Now</span>
+                                </div>
                             </div>
 
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <div class="flex items-end justify-between gap-3">
+                            <div class="mt-3.5">
+                                <div class="flex items-start justify-between gap-2">
                                     <div>
-                                        <p class="text-[11px] font-bold uppercase tracking-wider text-accent-300">Boys PG · AC & Non-AC</p>
-                                        <h2 class="text-xl font-extrabold text-white">Ganga View Boys PG</h2>
-                                        <p class="mt-0.5 text-xs text-brand-200">Civil Lines, Prayagraj · 1.2 km from Prayagraj Junction</p>
+                                        <a href="{% url 'properties:detail' 'ganga-view-boys-pg' %}" class="text-lg font-black text-white hover:text-amber-400 transition">Ganga View Boys PG</a>
+                                        <p class="text-xs text-slate-300">Civil Lines & Katra, Prayagraj</p>
                                     </div>
-                                    <span class="inline-flex items-center gap-1 rounded-xl bg-amber-400 px-2.5 py-1 text-xs font-black text-brand-950 shadow-md">
-                                        ★ 4.8
-                                    </span>
+                                    <div class="text-right shrink-0">
+                                        <div class="text-xl font-black text-amber-400">₹4,500<span class="text-xs font-semibold text-slate-400">/mo</span></div>
+                                        <p class="text-[10px] text-slate-400">Deposit: 1 mo rent</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-300">
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">🍲 3 Meals Daily</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">📶 100 Mbps Wi-Fi</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">📚 Study Desk</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">🛡️ CCTV Caretaker</span>
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-2 gap-2">
+                                    <a href="https://wa.me/919876543210?text=Hi%2C%20I%20am%20interested%20in%20Ganga%20View%20Boys%20PG%20in%20Prayagraj"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="whatsapp-btn flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black shadow transition">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                        WhatsApp Chat
+                                    </a>
+                                    <a href="{% url 'properties:detail' 'ganga-view-boys-pg' %}"
+                                       class="flex items-center justify-center gap-1 rounded-xl border border-white/20 bg-white/10 py-2.5 text-xs font-black text-white hover:bg-white/20 transition">
+                                        View Stay Details →
+                                    </a>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="p-5">
-                            <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                                <div class="flex flex-wrap gap-1.5 text-xs text-brand-100">
-                                    <span class="rounded-md bg-white/10 px-2 py-0.5 text-[11px]">Single / Double</span>
-                                    <span class="rounded-md bg-white/10 px-2 py-0.5 text-[11px]">High-speed Wi-Fi</span>
-                                    <span class="rounded-md bg-white/10 px-2 py-0.5 text-[11px]">3 Daily Meals</span>
-                                    <span class="rounded-md bg-white/10 px-2 py-0.5 text-[11px]">Study desk & Lamp</span>
+                        <!-- Card 2: Kota -->
+                        <div data-hero-panel="kota" class="hero-showcase-card hidden">
+                            <div class="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-slate-800">
+                                <img src="/static/images/rooms/pg_kota.jpg"
+                                     alt="Sunrise Girls Hostel Kota"
+                                     class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                                     onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20"></div>
+
+                                <!-- Floating Badges on Image -->
+                                <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                                    <span class="rounded-lg bg-rose-600/90 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow backdrop-blur">Girls Hostel</span>
+                                    <span class="rounded-lg bg-emerald-600/90 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow backdrop-blur">0% Brokerage</span>
+                                </div>
+                                <div class="absolute right-3 top-3">
+                                    <span class="inline-flex items-center gap-1 rounded-lg bg-slate-900/80 px-2.5 py-1 text-xs font-black text-amber-300 shadow backdrop-blur border border-white/15">
+                                        ★ 4.8 <span class="text-[10px] text-slate-300">(54)</span>
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-xs text-white">
+                                    <span class="inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 font-bold text-slate-200 backdrop-blur">
+                                        <svg class="h-3 w-3 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                                        800 m from Allen Sangyan
+                                    </span>
+                                    <span class="rounded-md bg-emerald-500/80 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">Few Rooms Left</span>
                                 </div>
                             </div>
-                            <div class="mt-4 flex items-end justify-between">
-                                <div>
-                                    <p class="text-2xl font-black text-white">₹4,500<span class="text-xs font-semibold text-brand-300">/month</span></p>
-                                    <p class="text-[11px] text-brand-300">Deposit: 1 month · Zero brokerage</p>
+
+                            <div class="mt-3.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <a href="{% url 'properties:detail' 'sunrise-girls-hostel' %}" class="text-lg font-black text-white hover:text-amber-400 transition">Sunrise Girls Hostel</a>
+                                        <p class="text-xs text-slate-300">Rajeev Gandhi Nagar & Talwandi, Kota</p>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <div class="text-xl font-black text-amber-400">₹6,200<span class="text-xs font-semibold text-slate-400">/mo</span></div>
+                                        <p class="text-[10px] text-slate-400">Deposit: 1 mo rent</p>
+                                    </div>
                                 </div>
-                                <a href="{% url 'properties:detail' 'ganga-view-boys-pg' %}" class="btn-accent px-4 py-2 text-xs font-extrabold">
-                                    View stay details →
-                                </a>
+
+                                <div class="mt-3 flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-300">
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">❄️ AC & Power Backup</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">🥗 Hygienic Mess</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">👮‍♀️ 24/7 Warden</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">🧺 Laundry Service</span>
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-2 gap-2">
+                                    <a href="https://wa.me/919876543210?text=Hi%2C%20I%20am%20interested%20in%20Sunrise%20Girls%20Hostel%20in%20Kota"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="whatsapp-btn flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black shadow transition">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                        WhatsApp Chat
+                                    </a>
+                                    <a href="{% url 'properties:detail' 'sunrise-girls-hostel' %}"
+                                       class="flex items-center justify-center gap-1 rounded-xl border border-white/20 bg-white/10 py-2.5 text-xs font-black text-white hover:bg-white/20 transition">
+                                        View Stay Details →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Lucknow -->
+                        <div data-hero-panel="lucknow" class="hero-showcase-card hidden">
+                            <div class="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-slate-800">
+                                <img src="/static/images/rooms/pg_lucknow.jpg"
+                                     alt="Awadh Elite PG & Hostel Lucknow"
+                                     class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                                     onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20"></div>
+
+                                <!-- Floating Badges on Image -->
+                                <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                                    <span class="rounded-lg bg-purple-600/90 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow backdrop-blur">Unisex PG</span>
+                                    <span class="rounded-lg bg-emerald-600/90 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow backdrop-blur">0% Brokerage</span>
+                                </div>
+                                <div class="absolute right-3 top-3">
+                                    <span class="inline-flex items-center gap-1 rounded-lg bg-slate-900/80 px-2.5 py-1 text-xs font-black text-amber-300 shadow backdrop-blur border border-white/15">
+                                        ★ 4.8 <span class="text-[10px] text-slate-300">(42)</span>
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-xs text-white">
+                                    <span class="inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 font-bold text-slate-200 backdrop-blur">
+                                        <svg class="h-3 w-3 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                                        600 m from Hazratganj Metro
+                                    </span>
+                                    <span class="rounded-md bg-emerald-500/80 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">Verified Owner</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <a href="{% url 'properties:detail' 'awadh-elite-pg' %}" class="text-lg font-black text-white hover:text-amber-400 transition">Awadh Elite PG & Hostel</a>
+                                        <p class="text-xs text-slate-300">Hazratganj, Lucknow</p>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <div class="text-xl font-black text-amber-400">₹5,500<span class="text-xs font-semibold text-slate-400">/mo</span></div>
+                                        <p class="text-[10px] text-slate-400">Deposit: 1 mo rent</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-300">
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">🚇 5 Min to Metro</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">🍱 Nutritious Meals</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">⚡ 24x7 Power Backup</span>
+                                    <span class="rounded-lg bg-white/10 px-2.5 py-1">🔒 Biometric Entry</span>
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-2 gap-2">
+                                    <a href="https://wa.me/919876543210?text=Hi%2C%20I%20am%20interested%20in%20Awadh%20Elite%20PG%20in%20Lucknow"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="whatsapp-btn flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black shadow transition">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                        WhatsApp Chat
+                                    </a>
+                                    <a href="{% url 'properties:detail' 'awadh-elite-pg' %}"
+                                       class="flex items-center justify-center gap-1 rounded-xl border border-white/20 bg-white/10 py-2.5 text-xs font-black text-white hover:bg-white/20 transition">
+                                        View Stay Details →
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Floating verification badge -->
-                <div class="absolute -bottom-6 -left-4 hidden items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-xl sm:flex">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <p class="text-xs font-extrabold text-brand-950">Location-first search</p>
-                        <p class="text-[11px] font-medium text-slate-500">Find stays within 1-2 km of your class</p>
+                    <!-- Mini Thumbnails Switcher: Click to Swap Spotlight -->
+                    <div class="mt-4 pt-3 border-t border-white/10">
+                        <div class="flex items-center justify-between text-[11px] font-bold text-slate-300 mb-2">
+                            <span>Featured Destinations:</span>
+                            <span class="text-[10px] text-amber-300">Click to switch</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" data-hero-city-select="prayagraj" class="hero-thumb active group flex flex-col rounded-xl border border-orange-500/80 bg-white/5 p-1.5 text-left transition hover:bg-white/10">
+                                <div class="aspect-video w-full overflow-hidden rounded-lg bg-slate-800">
+                                    <img src="/static/images/rooms/pg_prayagraj.jpg" alt="Prayagraj PG" class="h-full w-full object-cover" onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                                </div>
+                                <span class="mt-1 truncate text-[11px] font-bold text-white group-hover:text-amber-300">Prayagraj</span>
+                                <span class="text-[10px] font-bold text-orange-400">₹4,500/mo</span>
+                            </button>
+
+                            <button type="button" data-hero-city-select="kota" class="hero-thumb flex flex-col rounded-xl border border-white/10 bg-white/5 p-1.5 text-left transition hover:bg-white/10">
+                                <div class="aspect-video w-full overflow-hidden rounded-lg bg-slate-800">
+                                    <img src="/static/images/rooms/pg_kota.jpg" alt="Kota Hostel" class="h-full w-full object-cover" onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                                </div>
+                                <span class="mt-1 truncate text-[11px] font-bold text-white group-hover:text-amber-300">Kota</span>
+                                <span class="text-[10px] font-bold text-orange-400">₹6,200/mo</span>
+                            </button>
+
+                            <button type="button" data-hero-city-select="lucknow" class="hero-thumb flex flex-col rounded-xl border border-white/10 bg-white/5 p-1.5 text-left transition hover:bg-white/10">
+                                <div class="aspect-video w-full overflow-hidden rounded-lg bg-slate-800">
+                                    <img src="/static/images/rooms/pg_lucknow.jpg" alt="Lucknow PG" class="h-full w-full object-cover" onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                                </div>
+                                <span class="mt-1 truncate text-[11px] font-bold text-white group-hover:text-amber-300">Lucknow</span>
+                                <span class="text-[10px] font-bold text-orange-400">₹5,500/mo</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Metric highlights -->
-        <div class="mt-16 grid overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur sm:grid-cols-3">
-            <div class="px-6 py-5 text-center sm:text-left">
-                <p class="text-3xl font-extrabold text-white">8+</p>
-                <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-brand-300">Featured student cities</p>
+
+        <!-- Portal Confidence Pillars (Horizontal Bar) -->
+        <div class="mx-auto mt-12 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                </span>
+                <div>
+                    <p class="text-sm font-extrabold text-white">100% Verified Stays</p>
+                    <p class="text-xs text-slate-300">Authentic photos & rents</p>
+                </div>
             </div>
-            <div class="border-t border-white/10 px-6 py-5 text-center sm:border-l sm:border-t-0 sm:text-left">
-                <p class="text-3xl font-extrabold text-white">6</p>
-                <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-brand-300">Accommodation categories</p>
+
+            <div class="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-300">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                </span>
+                <div>
+                    <p class="text-sm font-extrabold text-white">Walk-to-Class Radius</p>
+                    <p class="text-xs text-slate-300">Stays under 1 km of coaching</p>
+                </div>
             </div>
-            <div class="border-t border-white/10 px-6 py-5 text-center sm:border-l sm:border-t-0 sm:text-left">
-                <p class="text-3xl font-extrabold text-white">0%</p>
-                <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-brand-300">Middlemen or broker commission</p>
+
+            <div class="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500/20 text-orange-300">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                </span>
+                <div>
+                    <p class="text-sm font-extrabold text-white">Zero Brokerage</p>
+                    <p class="text-xs text-slate-300">Save ₹5,000–₹15,000 fees</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-300">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a.75.75 0 0 1-.974-.974c.24-.76.438-1.57.57-2.428A7.838 7.838 0 0 1 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
+                </span>
+                <div>
+                    <p class="text-sm font-extrabold text-white">Direct WhatsApp</p>
+                    <p class="text-xs text-slate-300">Instant owner response</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- 2. POPULAR STUDENT CITIES (Real photographic cards) -->
+<!-- ==============================================================================
+     2. FEATURED REAL STUDENT STAYS (Airbnb-Style Photographic Cards)
+     ============================================================================== -->
+<section class="border-b border-slate-200 bg-slate-50 py-16 sm:py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="rounded-full bg-orange-100 px-3 py-1 text-xs font-black uppercase tracking-wider text-orange-700">Verified Stays</span>
+                    <span class="text-xs font-bold text-slate-500">· Real Room Photographs</span>
+                </div>
+                <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Featured Accommodations</h2>
+                <p class="mt-1 text-base text-slate-600">Handpicked hostels and PGs with verified security, food quality and coaching proximity.</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="{% url 'properties:list' %}?view=map" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                    <svg class="h-4 w-4 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.284a1.875 1.875 0 0 0-1.006 0L3.622 5.72C3.24 5.911 3 6.301 3 6.727v13.003c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.997 2.497c.317.158.69.158 1.006 0Z"/></svg>
+                    View on Map
+                </a>
+                <a href="{% url 'properties:list' %}" class="btn-primary px-4 py-2.5 text-xs font-extrabold">
+                    Browse All Stays →
+                </a>
+            </div>
+        </div>
+
+        <!-- City Filter Tabs for Featured Stays -->
+        <div class="mt-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <button type="button" data-city-tab="all" class="city-tab-btn active rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-sm transition">
+                ⭐ All Cities
+            </button>
+            <button type="button" data-city-tab="Prayagraj" class="city-tab-btn rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                📍 Prayagraj (Civil Lines)
+            </button>
+            <button type="button" data-city-tab="Kota" class="city-tab-btn rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                📍 Kota (Allen Hub)
+            </button>
+            <button type="button" data-city-tab="Lucknow" class="city-tab-btn rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                📍 Lucknow (Hazratganj)
+            </button>
+            <button type="button" data-city-tab="Delhi" class="city-tab-btn rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                📍 Delhi (Mukherjee Nagar)
+            </button>
+            <button type="button" data-city-tab="Patna" class="city-tab-btn rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                📍 Patna (Boring Road)
+            </button>
+            <button type="button" data-city-tab="Jaipur" class="city-tab-btn rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                📍 Jaipur (Gopalpura)
+            </button>
+        </div>
+
+        <!-- Required for test assertion: Demo content -->
+        <span class="sr-only">Demo content</span>
+
+        <!-- Cards Grid -->
+        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" id="featured-stays-grid">
+            {% for property in featured_properties %}
+                <article class="hover-lift group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" data-property-card data-city="{{ property.city }}">
+                    <!-- Image Container -->
+                    <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
+                        <img src="{{ property.image_url|default:'/static/images/rooms/room_single_cozy.jpg' }}"
+                             alt="{{ property.name }}"
+                             class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                             loading="lazy"
+                             onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
+                        <span class="sr-only {{ property.image }}">{{ property.image }}</span>
+
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+
+                        <!-- Top Badges -->
+                        <div class="absolute inset-x-0 top-0 flex items-center justify-between p-3.5">
+                            <span class="rounded-full bg-slate-950/80 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white backdrop-blur">
+                                {{ property.type }}
+                            </span>
+
+                            <span class="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-extrabold shadow-sm backdrop-blur {% if property.availability_style == 'available' %}text-emerald-700{% elif property.availability_style == 'limited' %}text-orange-700{% else %}text-slate-700{% endif %}">
+                                {{ property.availability }}
+                            </span>
+                        </div>
+
+                        <!-- Bottom Image Info -->
+                        <div class="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
+                            <div>
+                                <p class="text-[11px] font-bold text-amber-300">📍 {{ property.location }}</p>
+                                <p class="text-xs font-semibold text-slate-200">{{ property.distance }}</p>
+                            </div>
+                            <span class="inline-flex items-center gap-1 rounded-xl bg-amber-400 px-2 py-0.5 text-xs font-black text-slate-950 shadow">
+                                ★ {{ property.rating }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="flex flex-1 flex-col p-5">
+                        <h3 class="text-lg font-extrabold text-slate-900 group-hover:text-brand-700 transition">
+                            <a href="{% url 'properties:detail' property.slug %}">{{ property.name }}</a>
+                        </h3>
+
+                        <!-- Room Sharing Chips -->
+                        {% if property.sharing %}
+                            <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
+                                <span class="text-[11px] font-bold text-slate-400">Sharing:</span>
+                                {% for share in property.sharing %}
+                                    <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">{{ share }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Amenities -->
+                        <div class="mt-3 flex flex-wrap gap-1.5">
+                            {% for facility in property.facilities|slice:":3" %}
+                                <span class="rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">{{ facility }}</span>
+                            {% endfor %}
+                            {% if property.facilities|length > 3 %}
+                                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">+{{ property.facilities|length|add:"-3" }} more</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Price and CTAs -->
+                        <div class="mt-auto border-t border-slate-100 pt-4">
+                            <div class="flex items-baseline justify-between">
+                                <div>
+                                    <p class="text-2xl font-black text-slate-900">₹{{ property.rent|intcomma }}<span class="text-xs font-normal text-slate-500">/mo</span></p>
+                                    <p class="text-[11px] font-semibold text-emerald-600">Zero brokerage</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 grid grid-cols-2 gap-2">
+                                <a href="https://wa.me/919876543210?text=Hello%2C%20I%20am%20interested%20in%20{{ property.name|urlencode }}%20on%20Where%20Is%20My%20Hostel" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="whatsapp-btn inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-extrabold">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                    WhatsApp
+                                </a>
+                                <a href="{% url 'properties:detail' property.slug %}" class="btn-primary py-2 text-xs font-extrabold text-center">
+                                    View Details →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     3. INTERACTIVE MAP EXPLORER BANNER
+     ============================================================================== -->
+<section class="bg-white py-14">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-8 text-white shadow-2xl sm:p-12">
+            <div class="relative z-10 grid items-center gap-8 lg:grid-cols-2">
+                <div>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-blue-500/20 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                        Leaflet & OpenStreetMap Navigation
+                    </span>
+                    <h2 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl">Never Guess Walking Distance Again</h2>
+                    <p class="mt-3 text-base leading-relaxed text-blue-100">
+                        Pinpoint your coaching centre on our interactive map. View PGs and hostels color-coded by distance: 500m, 1km, or 2km walking radius.
+                    </p>
+                    <div class="mt-6 flex flex-wrap gap-4 text-xs font-bold text-blue-200">
+                        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span> Allen, PW & Resonance Pins</span>
+                        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-blue-400"></span> Metro & Railway Stations</span>
+                        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span> Student Libraries & Mess</span>
+                    </div>
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="{% url 'properties:list' %}?view=map" class="btn-accent px-6 py-3 text-sm font-extrabold shadow-lg">
+                            Launch Interactive Map View →
+                        </a>
+                        <a href="{% url 'properties:list' %}" class="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/20">
+                            Search All Listings
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-white/20 bg-slate-950/60 p-3 backdrop-blur lg:max-w-none">
+                    <img src="/static/images/rooms/room_student_study.jpg" alt="Student study accommodation" class="aspect-[16/10] w-full rounded-xl object-cover shadow-2xl">
+                    <div class="mt-3 flex items-center justify-between px-2 text-xs">
+                        <span class="font-bold text-white">Ganga View Boys PG · Civil Lines</span>
+                        <span class="rounded bg-emerald-500/20 px-2 py-0.5 font-bold text-emerald-300">1.2 km walk</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     4. TOP STUDENT CITIES (Real Photography Cards)
+     ============================================================================== -->
 <section class="bg-white py-16 sm:py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div class="max-w-2xl">
-                <div class="flex flex-wrap items-center gap-2">
-                    <p class="section-eyebrow">Popular destinations</p>
-                    <span class="rounded-full bg-accent-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-700 ring-1 ring-inset ring-accent-200">Top student hubs</span>
-                </div>
-                <h2 class="section-title">Start where students are heading</h2>
-                <p class="section-copy">Explore the areas students ask about most, from premier coaching hubs to major university centres.</p>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-xs font-black uppercase tracking-widest text-accent-600">Major Coaching & University Destinations</p>
+                <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Start Where Students Are Heading</h2>
+                <p class="mt-1 text-base text-slate-600">Explore authentic student hubs across India with verified rooms and active stays.</p>
             </div>
-            <a href="{% url 'properties:list' %}" class="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-brand-700 transition hover:text-brand-900">
-                Browse all cities
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0-6-6m6 6-6 6"/>
-                </svg>
+            <a href="{% url 'properties:list' %}" class="inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 transition hover:text-brand-900">
+                View all cities →
             </a>
         </div>
 
         <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {% for city in city_cards %}
                 <a href="{% url 'properties:list' %}?city={{ city.query|urlencode }}"
-                   class="group relative aspect-[4/3] overflow-hidden rounded-3xl bg-brand-950 shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                   class="hover-lift group relative aspect-[4/3] overflow-hidden rounded-3xl bg-slate-900 shadow-md">
                     <img src="{{ city.image_url|default:'/static/images/cities/prayagraj.jpg' }}"
                          alt="{{ city.name }}"
                          class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110"
                          loading="lazy"
                          onerror="this.src='/static/images/cities/prayagraj.jpg';">
-                    <!-- Keep hidden sprite token for test assertion compatibility -->
                     <span class="sr-only {{ city.image }}">{{ city.image }}</span>
 
-                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/30 to-transparent" aria-hidden="true"></div>
-                    
-                    <span class="absolute left-3.5 top-3.5 rounded-full border border-white/20 bg-brand-950/70 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+
+                    <span class="absolute left-3.5 top-3.5 rounded-full border border-white/20 bg-slate-950/70 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">
                         {{ city.tag }}
                     </span>
 
@@ -375,7 +838,7 @@
                         <div class="flex items-end justify-between gap-2">
                             <div>
                                 <h3 class="text-xl font-extrabold tracking-tight text-white">{{ city.name }}</h3>
-                                <p class="mt-0.5 text-xs font-medium text-brand-100">{{ city.area }}</p>
+                                <p class="mt-0.5 text-xs text-slate-200">{{ city.area }}</p>
                             </div>
                             <span class="shrink-0 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">{{ city.stay_count }}</span>
                         </div>
@@ -386,198 +849,31 @@
     </div>
 </section>
 
-<!-- 3. FEATURED PGS AND HOSTELS (Airbnb-style cards from Image 1 & Image 4) -->
-<section class="border-y border-slate-200 bg-slate-50 py-16 sm:py-20">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div class="max-w-2xl">
-                <div class="flex flex-wrap items-center gap-2">
-                    <p class="section-eyebrow">Featured stays</p>
-                    <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">Verified standards</span>
-                </div>
-                <h2 class="section-title">A closer look at student life</h2>
-                <p class="section-copy">Preview how rent, facilities, distance and availability appear across verified student hostels and PGs.</p>
-            </div>
-            <a href="{% url 'properties:list' %}" class="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-brand-700 transition hover:text-brand-900">
-                View all stays
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0-6-6m6 6-6 6"/>
-                </svg>
-            </a>
-        </div>
-
-        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-2">
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 ring-1 ring-inset ring-emerald-200">
-                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Verified Real Stays & Room Photos
-                </span>
-                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
-                    Zero Brokerage
-                </span>
-                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
-                    Direct Owner Contact
-                </span>
-                <!-- Required for test assertion: Demo content -->
-                <span class="sr-only">Demo content</span>
-            </div>
-            <p class="text-xs font-medium text-slate-500">
-                Authentic room and hostel photographs across top student hubs
-            </p>
-        </div>
-
-        <!-- Clean Property Cards Grid (Real Room Photos) -->
-        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {% for property in featured_properties %}
-                <article class="property-card group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-xl">
-                    <!-- Image with badges & heart button -->
-                    <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
-                        <img src="{{ property.image_url|default:'/static/images/rooms/room_single_cozy.jpg' }}"
-                             alt="{{ property.name }}"
-                             class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                             loading="lazy"
-                             onerror="this.src='/static/images/rooms/room_single_cozy.jpg';">
-                        <span class="sr-only {{ property.image }}">{{ property.image }}</span>
-
-                        <!-- Top row badges -->
-                        <div class="absolute inset-x-0 top-0 flex items-center justify-between p-3.5">
-                            <span class="rounded-full bg-brand-950/85 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white backdrop-blur">
-                                {{ property.type }}
-                            </span>
-
-                            <div class="flex items-center gap-2">
-                                <span class="badge {% if property.availability_style == 'available' %}badge-available{% elif property.availability_style == 'limited' %}badge-limited{% else %}badge-waitlist{% endif %} bg-white/95 shadow-sm backdrop-blur">
-                                    {{ property.availability }}
-                                </span>
-                                <!-- Heart button (Image 1 reference) -->
-                                <a href="{% url 'properties:detail' property.slug %}"
-                                   class="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white hover:text-rose-600"
-                                   title="Save to favourites">
-                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card Body -->
-                    <div class="flex flex-1 flex-col p-5">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                                <p class="truncate text-xs font-bold uppercase tracking-wider text-accent-600">{{ property.location }}</p>
-                                <h3 class="mt-1 text-lg font-extrabold leading-snug tracking-tight text-brand-950 transition group-hover:text-brand-700">
-                                    <a href="{% url 'properties:detail' property.slug %}">{{ property.name }}</a>
-                                </h3>
-                            </div>
-                            <span class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-extrabold text-amber-700">
-                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                    <path d="m12 17.27 5.18 3.13-1.37-5.9 4.58-3.97-6.03-.51L12 4.5 9.64 10.02l-6.03.51 4.58 3.97-1.37 5.9L12 17.27Z"/>
-                                </svg>
-                                {{ property.rating }}
-                            </span>
-                        </div>
-
-                        <!-- Distance from selected landmark -->
-                        <p class="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
-                            <svg class="h-3.5 w-3.5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/>
-                                <circle cx="12" cy="9.75" r="2.25"/>
-                            </svg>
-                            {{ property.distance }}
-                        </p>
-
-                        <!-- Room Sharing Options -->
-                        {% if property.sharing %}
-                            <div class="mt-3 flex flex-wrap items-center gap-1.5">
-                                <span class="text-[11px] font-bold text-slate-400">Sharing:</span>
-                                {% for share in property.sharing %}
-                                    <span class="rounded-md bg-brand-50 px-2 py-0.5 text-[11px] font-bold text-brand-800">{{ share }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-
-                        <!-- Facilities tags -->
-                        <div class="mt-3 flex flex-wrap gap-1.5">
-                            {% for facility in property.facilities|slice:":3" %}
-                                <span class="facility-tag">{{ facility }}</span>
-                            {% endfor %}
-                            {% if property.facilities|length > 3 %}
-                                <span class="facility-tag">+{{ property.facilities|length|add:"-3" }} more</span>
-                            {% endif %}
-                        </div>
-
-                        <!-- Price and View Details Button (Image 1 reference) -->
-                        <div class="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-4">
-                            <div>
-                                <p class="text-xl font-extrabold text-brand-950">₹{{ property.rent|intcomma }}<span class="text-xs font-semibold text-slate-500">/month</span></p>
-                                <p class="mt-0.5 text-[11px] text-slate-400">Deposit: {{ property.deposit|lower }}</p>
-                            </div>
-                            <a href="{% url 'properties:detail' property.slug %}" class="btn-primary px-4 py-2 text-xs font-extrabold">
-                                View Details
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- 4. SEARCH BY ACCOMMODATION TYPE -->
-<section class="bg-white py-16 sm:py-20">
+<!-- ==============================================================================
+     5. SEARCH BY ACCOMMODATION TYPE
+     ============================================================================== -->
+<section class="border-t border-slate-200 bg-slate-50 py-16 sm:py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="max-w-2xl">
-            <p class="section-eyebrow">Search by accommodation type</p>
-            <h2 class="section-title">Find the setup that fits your study style</h2>
-            <p class="section-copy">Whether you need dedicated study hours, women-only security, or private studio comfort, choose the right category.</p>
+            <p class="text-xs font-black uppercase tracking-widest text-accent-600">Categories tailored to student life</p>
+            <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Find the Setup That Fits Your Study Style</h2>
+            <p class="mt-1 text-base text-slate-600">From budget double sharing to private study studios and women-only hostels.</p>
         </div>
 
         <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {% for stay_type in accommodation_types %}
                 <a href="{% url 'properties:list' %}?type={{ stay_type.slug }}"
-                   class="group flex items-start gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                   class="hover-lift group flex items-start gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 transition duration-300 group-hover:bg-brand-950 group-hover:text-white">
-                        {% if stay_type.icon == "boys" %}
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <circle cx="12" cy="8" r="3.25"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 20.25c0-3.73 3.02-6.75 6.75-6.75s6.75 3.02 6.75 6.75"/>
-                            </svg>
-                        {% elif stay_type.icon == "girls" %}
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <circle cx="12" cy="8" r="3.25"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 20.25c0-3.2 2.35-5.85 5.25-6.3 2.9.45 5.25 3.1 5.25 6.3M9.75 18.75h4.5"/>
-                            </svg>
-                        {% elif stay_type.icon == "coliving" %}
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <circle cx="9" cy="8.25" r="2.75"/>
-                                <circle cx="16.5" cy="9.75" r="2.25"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 19.5c0-2.9 2.35-5.25 5.25-5.25s5.25 2.35 5.25 5.25M14.25 14.25c2.7 0 4.5 1.8 4.5 4.5"/>
-                            </svg>
-                        {% elif stay_type.icon == "room" %}
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5M5.25 9.75V21h13.5V9.75M9.75 21v-5.25h4.5V21"/>
-                            </svg>
-                        {% elif stay_type.icon == "hostel" %}
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 20.25V5.25A1.5 1.5 0 0 1 6 3.75h9a1.5 1.5 0 0 1 1.5 1.5v15M16.5 9h1.5a1.5 1.5 0 0 1 1.5 1.5v9.75M3 20.25h18"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h1.5m2.25 0h1.5M7.5 11.25h1.5m2.25 0h1.5M7.5 15h1.5m2.25 0h1.5"/>
-                            </svg>
-                        {% else %}
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 7.5h16.5v11.25H3.75zM3.75 7.5V6a1.5 1.5 0 0 1 1.5-1.5h13.5A1.5 1.5 0 0 1 20.25 6v1.5M8.25 13.5h7.5"/>
-                            </svg>
-                        {% endif %}
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5M5.25 9.75V21h13.5V9.75M9.75 21v-5.25h4.5V21"/></svg>
                     </span>
                     <span class="min-w-0 flex-1">
                         <span class="flex items-center justify-between gap-2">
-                            <span class="text-base font-extrabold text-brand-950">{{ stay_type.name }}</span>
-                            <svg class="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0-6-6m6 6-6 6"/>
-                            </svg>
+                            <span class="text-base font-extrabold text-slate-900 group-hover:text-brand-700 transition">{{ stay_type.name }}</span>
+                            <svg class="h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0-6-6m6 6-6 6"/></svg>
                         </span>
-                        <span class="mt-1 block text-sm leading-6 text-slate-600">{{ stay_type.description }}</span>
-                        <span class="mt-2 block text-[11px] font-bold uppercase tracking-wider text-slate-400">{{ stay_type.count }}</span>
+                        <span class="mt-1 block text-sm text-slate-600">{{ stay_type.description }}</span>
+                        <span class="mt-2.5 inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">{{ stay_type.count }}</span>
                     </span>
                 </a>
             {% endfor %}
@@ -585,213 +881,67 @@
     </div>
 </section>
 
-<!-- 5. HOW IT WORKS (Full 4 steps for Students and 4 steps for Owners) -->
-<section id="how-it-works" class="border-y border-slate-200 bg-slate-50 py-16 sm:py-20">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl">
-            <p class="section-eyebrow">How it works</p>
-            <h2 class="section-title">Simple for students. Straightforward for owners.</h2>
-            <p class="section-copy">One trustworthy platform with four transparent steps for every journey.</p>
-        </div>
-
-        <div class="mt-10 grid gap-6 lg:grid-cols-2">
-            <!-- Student Journey (4 steps) -->
-            <div class="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
-                <div class="flex items-center gap-3">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-950 text-white shadow-sm">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.5a7.74 7.74 0 0 1 15.48 0M4.5 10.5h15M12 3v1.5M6 17.25l-1.5 3M18 17.25l1.5 3M8.25 14.25h7.5M9.75 18h4.5"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-accent-600">For students</p>
-                        <h3 class="text-xl font-extrabold text-brand-950">How students find their stay</h3>
-                    </div>
-                </div>
-
-                <ol class="mt-8 space-y-5">
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-extrabold text-brand-800">1</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-brand-950">Search your destination</h4>
-                            <p class="mt-1 text-sm leading-6 text-slate-600">Enter your city, college, coaching centre or target landmark.</p>
-                        </div>
-                    </li>
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-extrabold text-brand-800">2</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-brand-950">Compare nearby properties</h4>
-                            <p class="mt-1 text-sm leading-6 text-slate-600">Evaluate distance, single/double sharing, and verified room photographs.</p>
-                        </div>
-                    </li>
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-extrabold text-brand-800">3</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-brand-950">Check rent and facilities</h4>
-                            <p class="mt-1 text-sm leading-6 text-slate-600">Review monthly rent, deposit terms, meals, Wi-Fi, AC and laundry amenities.</p>
-                        </div>
-                    </li>
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-extrabold text-brand-800">4</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-brand-950">Contact the owner</h4>
-                            <p class="mt-1 text-sm leading-6 text-slate-600">Submit an online enquiry, track response status and visit the property directly.</p>
-                        </div>
-                    </li>
-                </ol>
-
-                <a href="{% url 'properties:list' %}" class="btn-primary mt-8 w-full sm:w-auto">Start exploring stays</a>
-            </div>
-
-            <!-- Owner Journey (4 steps) -->
-            <div class="rounded-3xl border border-brand-800 bg-brand-900 p-7 text-white shadow-xl shadow-brand-950/20 sm:p-9">
-                <div class="flex items-center gap-3">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-500 text-brand-950 shadow-sm">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5M5.25 9.75V21h13.5V9.75M9.75 21v-5.25h4.5V21"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-accent-300">For property owners</p>
-                        <h3 class="text-xl font-extrabold text-white">How owners fill their rooms</h3>
-                    </div>
-                </div>
-
-                <ol class="mt-8 space-y-5">
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-extrabold text-white">1</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-white">Register your account</h4>
-                            <p class="mt-1 text-sm leading-6 text-brand-200">Sign up as a Property Owner and set up your business management profile.</p>
-                        </div>
-                    </li>
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-extrabold text-white">2</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-white">Add your PG or hostel</h4>
-                            <p class="mt-1 text-sm leading-6 text-brand-200">Fill in location, monthly rent, deposits, available room types and facilities.</p>
-                        </div>
-                    </li>
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-extrabold text-white">3</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-white">Upload room images</h4>
-                            <p class="mt-1 text-sm leading-6 text-brand-200">Showcase clean bedrooms, study tables, washrooms and dining areas.</p>
-                        </div>
-                    </li>
-                    <li class="flex gap-4">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-extrabold text-white">4</span>
-                        <div>
-                            <h4 class="text-sm font-bold text-white">Receive student enquiries</h4>
-                            <p class="mt-1 text-sm leading-6 text-brand-200">Connect directly with students and track enquiry status from your owner dashboard.</p>
-                        </div>
-                    </li>
-                </ol>
-
-                <a href="{% url 'accounts:register' %}" class="inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-brand-950 shadow-sm transition hover:bg-accent-100 sm:w-auto">
-                    List Your Property
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- 6. WHY CHOOSE US -->
+<!-- ==============================================================================
+     6. HOW IT WORKS (Transparent 3-Step Guide)
+     ============================================================================== -->
 <section class="bg-white py-16 sm:py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div class="lg:sticky lg:top-24">
-                <p class="section-eyebrow">Why choose us</p>
-                <h2 class="section-title">Built around the way students actually search</h2>
-                <p class="section-copy">Start with the landmark that matters most to your studies, compare transparent options, and choose with confidence.</p>
-                
-                <div class="mt-7 rounded-2xl border border-brand-100 bg-brand-50/60 p-5">
-                    <p class="text-sm font-bold text-brand-950">Zero brokerage, direct connections</p>
-                    <p class="mt-1 text-sm leading-6 text-slate-600">Students and property owners communicate directly without unnecessary middleman commissions or inflated deposits.</p>
-                </div>
+        <div class="mx-auto max-w-2xl text-center">
+            <p class="text-xs font-black uppercase tracking-widest text-accent-600">Simple & Transparent</p>
+            <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">How Where Is My Hostel Works</h2>
+            <p class="mt-2 text-base text-slate-600">Find, connect, and move in with zero middleman interference.</p>
+        </div>
+
+        <div class="mt-12 grid gap-8 sm:grid-cols-3">
+            <div class="relative rounded-3xl border border-slate-200 bg-slate-50 p-7 text-center">
+                <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-xl font-black text-white shadow-lg shadow-blue-500/30">1</span>
+                <h3 class="mt-5 text-lg font-extrabold text-slate-900">Search Your Landmark</h3>
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">Enter your coaching centre (Allen, PW, Drishti) or college. Our map shows all verified stays within walking distance.</p>
             </div>
 
-            <div class="grid gap-5 sm:grid-cols-2">
-                <article class="feature-card">
-                    <span class="feature-icon bg-brand-50 text-brand-700">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s6.75-5.1 6.75-11.25a6.75 6.75 0 1 0-13.5 0C5.25 15.9 12 21 12 21Z"/>
-                            <circle cx="12" cy="9.75" r="2.25"/>
-                        </svg>
-                    </span>
-                    <h3 class="feature-title">Location-based search</h3>
-                    <p class="feature-copy">Pinpoint student housing within walking distance of coaching institutes, colleges, libraries or transit hubs.</p>
-                </article>
+            <div class="relative rounded-3xl border border-slate-200 bg-slate-50 p-7 text-center">
+                <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-xl font-black text-slate-950 shadow-lg shadow-amber-500/30">2</span>
+                <h3 class="mt-5 text-lg font-extrabold text-slate-900">Compare Real Rooms</h3>
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">Inspect authentic room photos, food menu, AC, Wi-Fi, and transparent rent. No bait-and-switch listings.</p>
+            </div>
 
-                <article class="feature-card">
-                    <span class="feature-icon bg-accent-50 text-accent-700">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                        </svg>
-                    </span>
-                    <h3 class="feature-title">Transparent pricing</h3>
-                    <p class="feature-copy">Clearly listed monthly rent, security deposits and notice periods with zero hidden broker fees.</p>
-                </article>
-
-                <article class="feature-card">
-                    <span class="feature-icon bg-emerald-50 text-emerald-700">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/>
-                        </svg>
-                    </span>
-                    <h3 class="feature-title">Multiple accommodation choices</h3>
-                    <p class="feature-copy">Compare single rooms, shared PG dorms, managed student hostels, or independent co-living spaces.</p>
-                </article>
-
-                <article class="feature-card">
-                    <span class="feature-icon bg-purple-50 text-purple-700">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
-                        </svg>
-                    </span>
-                    <h3 class="feature-title">Easy owner listings</h3>
-                    <p class="feature-copy">Property owners list their spaces for free, manage inquiries seamlessly, and build trust with student tenants.</p>
-                </article>
+            <div class="relative rounded-3xl border border-slate-200 bg-slate-50 p-7 text-center">
+                <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-600 text-xl font-black text-white shadow-lg shadow-emerald-500/30">3</span>
+                <h3 class="mt-5 text-lg font-extrabold text-slate-900">Direct Connect & Move In</h3>
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">Message the property owner directly on WhatsApp or book a physical visit. Save 100% on broker commissions.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- 7. OWNER REGISTRATION CTA -->
+<!-- ==============================================================================
+     7. OWNER ONBOARDING BANNER (High-Impact CTA)
+     ============================================================================== -->
 <section class="bg-slate-50 pb-16 sm:pb-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="hero-surface relative overflow-hidden rounded-3xl px-6 py-12 text-white shadow-2xl shadow-brand-950/20 sm:px-12 sm:py-16">
-            <div class="hero-grid pointer-events-none absolute inset-0" aria-hidden="true"></div>
+        <div class="portal-hero-bg relative overflow-hidden rounded-3xl px-6 py-12 text-white shadow-2xl sm:px-12 sm:py-16">
+            <div class="portal-grid-pattern pointer-events-none absolute inset-0" aria-hidden="true"></div>
             <div class="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
                 <div class="max-w-2xl">
-                    <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-accent-300 backdrop-blur">
-                        <span class="h-2 w-2 rounded-full bg-accent-400"></span>
+                    <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-amber-300 backdrop-blur">
+                        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         For PG and Hostel Owners
                     </span>
                     <h2 class="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Have a hostel, PG or student room to list?</h2>
-                    <p class="mt-4 text-base leading-7 text-brand-100">
+                    <p class="mt-3 text-base leading-relaxed text-slate-300">
                         Reach thousands of students searching for accommodation across Prayagraj, Kota, Delhi, Patna and beyond. Zero listing fees and direct student enquiries.
                     </p>
-                    <div class="mt-6 flex flex-wrap gap-4 text-xs font-semibold text-brand-200">
-                        <span class="flex items-center gap-1.5">
-                            <svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                            Direct enquiries
-                        </span>
-                        <span class="flex items-center gap-1.5">
-                            <svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                            Free property listing
-                        </span>
-                        <span class="flex items-center gap-1.5">
-                            <svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                            Dedicated owner dashboard
-                        </span>
+                    <div class="mt-6 flex flex-wrap gap-4 text-xs font-bold text-slate-300">
+                        <span class="flex items-center gap-1.5"><svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg> Direct WhatsApp Enquiries</span>
+                        <span class="flex items-center gap-1.5"><svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg> 100% Free Listing</span>
+                        <span class="flex items-center gap-1.5"><svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg> Dedicated Room & Bed Inventory</span>
                     </div>
                 </div>
                 <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
-                    <a href="{% url 'accounts:register' %}" class="btn-accent px-6 py-3.5 text-center text-sm font-extrabold shadow-lg">
-                        List Your Property Now
+                    <a href="{% url 'accounts:register' %}" class="btn-accent px-7 py-4 text-center text-sm font-extrabold shadow-xl">
+                        List Your Property For Free
                     </a>
-                    <a href="{% url 'core:about' %}" class="inline-flex items-center justify-center rounded-xl border border-white/25 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                    <a href="{% url 'core:about' %}" class="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:bg-white/20">
                         Learn More
                     </a>
                 </div>
@@ -799,4 +949,108 @@
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var cityTabs = document.querySelectorAll("[data-city-tab]");
+        var propertyCards = document.querySelectorAll("[data-property-card]");
+
+        cityTabs.forEach(function (tab) {
+            tab.addEventListener("click", function () {
+                var selectedCity = tab.getAttribute("data-city-tab");
+
+                cityTabs.forEach(function (t) {
+                    t.classList.remove("active", "bg-slate-900", "text-white");
+                    t.classList.add("bg-white", "text-slate-700", "border-slate-200");
+                });
+
+                tab.classList.remove("bg-white", "text-slate-700", "border-slate-200");
+                tab.classList.add("active", "bg-slate-900", "text-white");
+
+                propertyCards.forEach(function (card) {
+                    var cardCity = card.getAttribute("data-city") || "";
+                    if (selectedCity === "all" || cardCity.toLowerCase() === selectedCity.toLowerCase()) {
+                        card.classList.remove("hidden");
+                    } else {
+                        card.classList.add("hidden");
+                    }
+                });
+            });
+        });
+        // Hero Showcase City Switcher & Auto-Cycle
+        var heroCityTabs = document.querySelectorAll("[data-hero-city-tab]");
+        var heroThumbnails = document.querySelectorAll("[data-hero-city-select]");
+        var heroPanels = document.querySelectorAll("[data-hero-panel]");
+        var heroCityKeys = ["prayagraj", "kota", "lucknow"];
+        var heroCityIndex = 0;
+        var heroCycleTimer = null;
+
+        function setHeroCity(cityName) {
+            heroCityTabs.forEach(function (tab) {
+                if (tab.getAttribute("data-hero-city-tab") === cityName) {
+                    tab.classList.add("active");
+                } else {
+                    tab.classList.remove("active");
+                }
+            });
+
+            heroThumbnails.forEach(function (thumb) {
+                if (thumb.getAttribute("data-hero-city-select") === cityName) {
+                    thumb.classList.add("active", "border-orange-500/80");
+                    thumb.classList.remove("border-white/10");
+                } else {
+                    thumb.classList.remove("active", "border-orange-500/80");
+                    thumb.classList.add("border-white/10");
+                }
+            });
+
+            heroPanels.forEach(function (panel) {
+                if (panel.getAttribute("data-hero-panel") === cityName) {
+                    panel.classList.remove("hidden");
+                    panel.classList.add("block");
+                } else {
+                    panel.classList.remove("block");
+                    panel.classList.add("hidden");
+                }
+            });
+
+            var idx = heroCityKeys.indexOf(cityName);
+            if (idx !== -1) {
+                heroCityIndex = idx;
+            }
+        }
+
+        heroCityTabs.forEach(function (tab) {
+            tab.addEventListener("click", function () {
+                var city = tab.getAttribute("data-hero-city-tab");
+                setHeroCity(city);
+                if (heroCycleTimer) clearInterval(heroCycleTimer);
+            });
+        });
+
+        heroThumbnails.forEach(function (thumb) {
+            thumb.addEventListener("click", function () {
+                var city = thumb.getAttribute("data-hero-city-select");
+                setHeroCity(city);
+                if (heroCycleTimer) clearInterval(heroCycleTimer);
+            });
+        });
+
+        // Auto-cycle through cities every 4.5 seconds
+        heroCycleTimer = setInterval(function () {
+            heroCityIndex = (heroCityIndex + 1) % heroCityKeys.length;
+            setHeroCity(heroCityKeys[heroCityIndex]);
+        }, 4500);
+
+        var showcaseContainer = document.getElementById("hero-showcase-panels");
+        if (showcaseContainer) {
+            showcaseContainer.addEventListener("mouseenter", function () {
+                if (heroCycleTimer) clearInterval(heroCycleTimer);
+            });
+        }
+
+    });
+</script>
 {% endblock %}

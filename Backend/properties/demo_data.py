@@ -65,7 +65,7 @@ FEATURED_PROPERTIES = [
         "rating": "4.6",
         "reviews": 38,
         "image": "property-1",
-        "image_url": "/static/images/rooms/room_single_cozy.jpg",
+        "image_url": "/static/images/rooms/pg_prayagraj.jpg",
         "description": (
             "A practical boys PG with clean shared rooms, home-style meals and a "
             "quiet study area. Located close to the station and major coaching hubs."
@@ -90,10 +90,35 @@ FEATURED_PROPERTIES = [
         "rating": "4.8",
         "reviews": 54,
         "image": "property-3",
-        "image_url": "/static/images/rooms/room_twin_sharing.jpg",
+        "image_url": "/static/images/rooms/pg_kota.jpg",
         "description": (
             "A secure girls hostel with furnished rooms, regular meals and a "
             "dedicated warden. Walking distance from one of Kota's largest coaching campuses."
+        ),
+    },
+    {
+        "slug": "awadh-elite-pg",
+        "name": "Awadh Elite PG & Hostel",
+        "type": "Unisex PG",
+        "location": "Hazratganj, Lucknow",
+        "city": "Lucknow",
+        "landmark": "Hazratganj Metro",
+        "rent": 5500,
+        "deposit": "One month rent",
+        "sharing": ["Single", "Double"],
+        "facilities": ["Wi-Fi", "Meals", "AC", "Power backup", "CCTV"],
+        "distance": "600 m from Hazratganj Metro",
+        "latitude": 26.8500,
+        "longitude": 80.9499,
+        "availability": "Available",
+        "availability_style": "available",
+        "rating": "4.8",
+        "reviews": 42,
+        "image": "property-lucknow",
+        "image_url": "/static/images/rooms/pg_lucknow.jpg",
+        "description": (
+            "Premium student and aspirant accommodation in Hazratganj, "
+            "walking distance from Hazratganj Metro Station and major coaching centres. Nutritious home-cooked food and 24/7 security."
         ),
     },
     {
