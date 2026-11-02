@@ -254,3 +254,14 @@ class OwnerProfileForm(forms.ModelForm):
         normalized = contact_number.replace(" ", "").replace("-", "")
         self.fields["contact_number"].run_validators(normalized)
         return normalized
+
+    def clean_profile_photo(self):
+        photo = self.cleaned_data.get("profile_photo")
+        if photo:
+            import os
+            if hasattr(photo, "size") and photo.size > 5 * 1024 * 1024:
+                raise forms.ValidationError("Profile photo file size cannot exceed 5MB.")
+            ext = os.path.splitext(getattr(photo, "name", ""))[1].lower()
+            if ext and ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+                raise forms.ValidationError("Only JPG, JPEG, PNG, or WEBP image formats are supported.")
+        return photo

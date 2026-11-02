@@ -154,6 +154,17 @@ class PropertyForm(forms.ModelForm):
             )
         return normalized
 
+    def clean_image(self):
+        img = self.cleaned_data.get("image")
+        if img:
+            import os
+            if hasattr(img, "size") and img.size > 5 * 1024 * 1024:
+                raise forms.ValidationError("Image file size cannot exceed 5MB.")
+            ext = os.path.splitext(getattr(img, "name", ""))[1].lower()
+            if ext and ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+                raise forms.ValidationError("Only JPG, JPEG, PNG, or WEBP image formats are supported.")
+        return img
+
     def clean_latitude(self):
         lat = self.cleaned_data.get("latitude")
         if lat is not None:
@@ -294,7 +305,11 @@ class PropertyImageForm(forms.ModelForm):
     def clean_image(self):
         img = self.cleaned_data.get("image")
         if img:
+            import os
             # 5MB limit
-            if img.size > 5 * 1024 * 1024:
+            if hasattr(img, "size") and img.size > 5 * 1024 * 1024:
                 raise ValidationError("Image file size cannot exceed 5MB.")
+            ext = os.path.splitext(getattr(img, "name", ""))[1].lower()
+            if ext and ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+                raise ValidationError("Only JPG, JPEG, PNG, or WEBP image formats are supported.")
         return img

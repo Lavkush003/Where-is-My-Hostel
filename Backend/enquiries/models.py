@@ -71,6 +71,11 @@ class Enquiry(models.Model):
                 name="unique_active_student_property_enquiry",
             )
         ]
+        indexes = [
+            models.Index(fields=["status", "-created_at"]),
+            models.Index(fields=["student", "-created_at"]),
+            models.Index(fields=["property", "-created_at"]),
+        ]
 
     def __str__(self):
         return f"{self.student.get_full_name()} - {self.property.name} ({self.get_status_display()})"

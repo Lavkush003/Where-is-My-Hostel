@@ -3,6 +3,69 @@
 from django.db import models
 
 
+class State(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=10, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class City(models.Model):
+    name = models.CharField(max_length=100, unique=True, db_index=True)
+    state = models.ForeignKey(
+        State,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="cities",
+    )
+    state_name = models.CharField(max_length=100, blank=True, default="Uttar Pradesh")
+    tag = models.CharField(max_length=100, blank=True, help_text="e.g. Coaching Capital, Sangam City")
+    area_summary = models.CharField(max_length=200, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    is_popular = models.BooleanField(default=False, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name_plural = "cities"
+
+    def __str__(self):
+        return self.name
+
+
+class Locality(models.Model):
+    name = models.CharField(max_length=150, db_index=True)
+    city = models.ForeignKey(
+        City,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="localities",
+    )
+    city_name = models.CharField(max_length=100, blank=True, db_index=True)
+    pincode = models.CharField(max_length=10, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    is_popular = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["city_name", "name"]
+        verbose_name_plural = "localities"
+
+    def __str__(self):
+        city = self.city_name or (self.city.name if self.city else "")
+        return f"{self.name}, {city}" if city else self.name
+
+
 class Landmark(models.Model):
     """
     Known educational institutions, transit hubs, commercial centres,

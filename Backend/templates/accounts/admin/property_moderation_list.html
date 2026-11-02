@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Property Moderation Queue | {{ site_name }}{% endblock %}
+
+{% block content %}
+<header class="border-b border-slate-200 bg-white shadow-sm">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <nav class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <a href="{% url 'accounts:admin_dashboard' %}" class="hover:text-brand-900">Admin Dashboard</a>
+                    <span>/</span>
+                    <span class="text-brand-950 font-bold">Property Moderation</span>
+                </nav>
+                <h1 class="mt-2 text-3xl font-black text-brand-950">Property Moderation Queue</h1>
+                <p class="mt-1 text-sm text-slate-600">Review, approve, reject or suspend property listings across India.</p>
+            </div>
+            <a href="{% url 'accounts:admin_dashboard' %}" class="btn-secondary text-xs">
+                ← Back to Overview
+            </a>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="mt-6 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+            <a href="{% url 'accounts:admin_property_list' %}?status=all{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if status_filter == 'all' %}bg-brand-950 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                All Listings ({{ status_counts.all }})
+            </a>
+            <a href="{% url 'accounts:admin_property_list' %}?status=pending{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if status_filter == 'pending' %}bg-amber-500 text-white shadow-sm{% else %}bg-amber-50 text-amber-800 hover:bg-amber-100{% endif %}">
+                Pending Approval ({{ status_counts.pending }})
+            </a>
+            <a href="{% url 'accounts:admin_property_list' %}?status=approved{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if status_filter == 'approved' %}bg-emerald-600 text-white shadow-sm{% else %}bg-emerald-50 text-emerald-800 hover:bg-emerald-100{% endif %}">
+                Approved ({{ status_counts.approved }})
+            </a>
+            <a href="{% url 'accounts:admin_property_list' %}?status=rejected{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if status_filter == 'rejected' %}bg-rose-600 text-white shadow-sm{% else %}bg-rose-50 text-rose-800 hover:bg-rose-100{% endif %}">
+                Rejected ({{ status_counts.rejected }})
+            </a>
+            <a href="{% url 'accounts:admin_property_list' %}?status=suspended{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if status_filter == 'suspended' %}bg-purple-600 text-white shadow-sm{% else %}bg-purple-50 text-purple-800 hover:bg-purple-100{% endif %}">
+                Suspended ({{ status_counts.suspended }})
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="bg-slate-50 py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+
+        <!-- Search Bar -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <form method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                <div class="relative flex-1">
+                    <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                    <input type="text"
+                           name="q"
+                           value="{{ search_query }}"
+                           placeholder="Search by property name, city, locality, or owner email/name..."
+                           class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500">
+                </div>
+                <button type="submit" class="btn-primary shrink-0 py-2.5 text-xs">Search</button>
+                {% if search_query %}
+                    <a href="{% url 'accounts:admin_property_list' %}?status={{ status_filter }}" class="btn-secondary shrink-0 py-2.5 text-xs">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Property Moderation Table -->
+        <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            {% if properties %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="border-b border-slate-200 bg-slate-50 text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                            <tr>
+                                <th class="py-3.5 px-5">Property</th>
+                                <th class="py-3.5 px-4">Owner Details</th>
+                                <th class="py-3.5 px-4">City / Area</th>
+                                <th class="py-3.5 px-4 text-center">Starting Rent</th>
+                                <th class="py-3.5 px-4 text-center">Status</th>
+                                <th class="py-3.5 px-4 text-center">Submitted</th>
+                                <th class="py-3.5 px-5 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for prop in properties %}
+                                <tr class="hover:bg-slate-50/70 transition">
+                                    <td class="py-4 px-5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-12 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                                                <img src="{{ prop.primary_image_url|default:'/static/images/rooms/room_single_cozy.jpg' }}"
+                                                     alt="{{ prop.name }}"
+                                                     class="h-full w-full object-cover">
+                                            </div>
+                                            <div class="min-w-0">
+                                                <a href="{% url 'accounts:admin_property_moderate' prop.pk %}" class="font-extrabold text-brand-950 hover:text-brand-700 block truncate">
+                                                    {{ prop.name }}
+                                                </a>
+                                                <span class="text-[11px] text-slate-500">{{ prop.get_property_type_display }} · {{ prop.get_gender_preference_display }}</span>
+                                                {% if prop.reports.count %}
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-black text-rose-600">
+                                                        ⚠ {{ prop.reports.count }} report(s)
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <p class="font-bold text-slate-900">{{ prop.owner.get_full_name }}</p>
+                                        <p class="text-xs text-slate-500">{{ prop.owner.email }}</p>
+                                        <p class="text-[11px] text-slate-400">{{ prop.contact_number }}</p>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <p class="font-semibold text-slate-900">{{ prop.city }}</p>
+                                        <p class="text-xs text-slate-500">{{ prop.locality|default:prop.address }}</p>
+                                    </td>
+                                    <td class="py-4 px-4 text-center font-extrabold text-brand-900">
+                                        ₹{{ prop.min_monthly_rent|intcomma }}<span class="text-[10px] text-slate-500">/mo</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-center">
+                                        {% if prop.approval_status == 'approved' %}
+                                            <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">Approved</span>
+                                        {% elif prop.approval_status == 'pending' %}
+                                            <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 ring-1 ring-inset ring-amber-300">Pending Review</span>
+                                        {% elif prop.approval_status == 'rejected' %}
+                                            <span class="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 ring-1 ring-inset ring-rose-200">Rejected</span>
+                                        {% elif prop.approval_status == 'suspended' %}
+                                            <span class="rounded-full bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 ring-1 ring-inset ring-purple-200">Suspended</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 px-4 text-center text-xs text-slate-500">
+                                        {{ prop.created_at|date:"M d, Y" }}
+                                    </td>
+                                    <td class="py-4 px-5 text-right">
+                                        <a href="{% url 'accounts:admin_property_moderate' prop.pk %}" class="btn-primary py-1.5 px-3 text-xs">
+                                            Moderate
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if properties.has_other_pages %}
+                    <div class="flex items-center justify-between border-t border-slate-200 bg-white px-5 py-4">
+                        <span class="text-xs text-slate-500">
+                            Page {{ properties.number }} of {{ properties.paginator.num_pages }}
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            {% if properties.has_previous %}
+                                <a href="?page={{ properties.previous_page_number }}&status={{ status_filter }}&q={{ search_query|urlencode }}" class="btn-secondary px-3 py-1 text-xs">Previous</a>
+                            {% endif %}
+                            {% if properties.has_next %}
+                                <a href="?page={{ properties.next_page_number }}&status={{ status_filter }}&q={{ search_query|urlencode }}" class="btn-secondary px-3 py-1 text-xs">Next</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="p-12 text-center">
+                    <p class="text-sm font-bold text-slate-700">No properties match your filter.</p>
+                    <p class="mt-1 text-xs text-slate-500">Try changing your search keywords or status filter.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+

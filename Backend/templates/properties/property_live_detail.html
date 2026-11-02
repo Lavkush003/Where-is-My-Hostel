@@ -391,11 +391,61 @@
                             <a href="{% url 'accounts:register' %}" class="btn-secondary w-full justify-center text-xs">Create Student Account</a>
                         </div>
                     {% endif %}
+
+                    <!-- Report Listing Trigger -->
+                    <div class="mt-4 border-t border-slate-100 pt-3 text-center">
+                        <button type="button" onclick="document.getElementById('report-modal').classList.remove('hidden')" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 hover:text-rose-600 transition">
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a1.5 1.5 0 0 0 1.164-1.46V4.341a1.5 1.5 0 0 0-1.85-1.458l-2.428.571a9 9 0 0 1-6.086-.71l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"/></svg>
+                            Report misleading or fraudulent listing
+                        </button>
+                    </div>
                 </div>
             </aside>
         </div>
     </div>
 </section>
+
+<!-- Report Listing Modal -->
+<div id="report-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+    <div class="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 class="text-base font-extrabold text-brand-950">Report Property Listing</h3>
+            <button type="button" onclick="document.getElementById('report-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-black text-lg">&times;</button>
+        </div>
+
+        <form method="post" action="{% url 'properties:report' property.slug %}" class="mt-4 space-y-3">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-bold text-slate-700">Reason for Report *</label>
+                <select name="reason" required class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:bg-white">
+                    <option value="fake_listing">Fake or non-existent property</option>
+                    <option value="incorrect_pricing">Incorrect or misleading rent/deposit</option>
+                    <option value="inappropriate_photos">Inappropriate or fake photos</option>
+                    <option value="fraudulent_owner">Unresponsive or fraudulent owner</option>
+                    <option value="safety_concern">Safety concern or rule violation</option>
+                    <option value="other">Other issue</option>
+                </select>
+            </div>
+
+            {% if not user.is_authenticated %}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700">Your Email (optional)</label>
+                    <input type="email" name="reporter_email" placeholder="name@example.com" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs">
+                </div>
+            {% endif %}
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700">Details / Explanation *</label>
+                <textarea name="details" rows="3" required placeholder="Describe what is incorrect, suspicious, or unsafe about this listing..." class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:bg-white"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('report-modal').classList.add('hidden')" class="btn-secondary py-2 text-xs">Cancel</button>
+                <button type="submit" class="btn-primary py-2 text-xs bg-rose-600 hover:bg-rose-700 text-white">Submit Report</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- Leaflet Map Initialization Script -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>

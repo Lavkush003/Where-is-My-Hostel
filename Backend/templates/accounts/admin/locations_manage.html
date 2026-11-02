@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}City & Location Management | {{ site_name }}{% endblock %}
+
+{% block content %}
+<header class="border-b border-slate-200 bg-white shadow-sm">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <nav class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <a href="{% url 'accounts:admin_dashboard' %}" class="hover:text-brand-900">Admin Dashboard</a>
+                    <span>/</span>
+                    <span class="text-brand-950 font-bold">City & Geographic Management</span>
+                </nav>
+                <h1 class="mt-2 text-3xl font-black text-brand-950">Location & Landmark Management</h1>
+                <p class="mt-1 text-sm text-slate-600">Configure student destination hubs, state jurisdictions, local coaching belts and transport landmarks.</p>
+            </div>
+            <a href="{% url 'accounts:admin_dashboard' %}" class="btn-secondary text-xs">
+                ← Back to Overview
+            </a>
+        </div>
+
+        <!-- Section Navigation Tabs -->
+        <div class="mt-6 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+            <a href="?section=cities"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if section == 'cities' %}bg-brand-950 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Cities ({{ counts.cities }})
+            </a>
+            <a href="?section=localities"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if section == 'localities' %}bg-brand-950 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Localities & Areas ({{ counts.localities }})
+            </a>
+            <a href="?section=coaching"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if section == 'coaching' %}bg-brand-950 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Coaching Centres ({{ counts.coaching }})
+            </a>
+            <a href="?section=landmarks"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if section == 'landmarks' %}bg-brand-950 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Transit & Landmarks ({{ counts.landmarks }})
+            </a>
+            <a href="?section=states"
+               class="rounded-xl px-4 py-2 text-xs font-bold transition {% if section == 'states' %}bg-brand-950 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                States ({{ counts.states }})
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="bg-slate-50 py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+
+        {% if section == 'cities' %}
+            <!-- CITIES SECTION -->
+            <div class="grid gap-8 lg:grid-cols-3">
+                <!-- Add City Form -->
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-base font-extrabold text-brand-950">Add New City</h2>
+                    <p class="text-xs text-slate-500">Register a new student accommodation hub</p>
+
+                    <form method="post" action="{% url 'accounts:admin_city_create' %}" class="mt-4 space-y-3">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">City Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Pune, Dehradun, Indore" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">State</label>
+                            <select name="state" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                                {% for s in states %}
+                                    <option value="{{ s.pk }}">{{ s.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">Tag / Moniker</label>
+                            <input type="text" name="tag" placeholder="e.g. Oxford of the East" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">Area Summary</label>
+                            <input type="text" name="area_summary" placeholder="e.g. Kothrud & FC Road" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700">Latitude</label>
+                                <input type="number" step="any" name="latitude" placeholder="18.5204" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700">Longitude</label>
+                                <input type="number" step="any" name="longitude" placeholder="73.8567" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 pt-2">
+                            <input type="checkbox" id="is_popular" name="is_popular" value="1" class="rounded text-brand-600 focus:ring-brand-500">
+                            <label for="is_popular" class="text-xs font-medium text-slate-700">Feature as Popular Hub on Homepage</label>
+                        </div>
+                        <button type="submit" class="btn-primary w-full py-2.5 text-xs justify-center mt-2">
+                            Save City
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Cities List -->
+                <div class="lg:col-span-2 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-base font-extrabold text-brand-950">Active Cities ({{ cities.count }})</h2>
+                        <a href="{% url 'admin:locations_city_changelist' %}" target="_blank" class="text-xs font-bold text-brand-700 hover:underline">Open in Django Admin</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-[11px] font-extrabold uppercase text-slate-500">
+                                <tr>
+                                    <th class="py-3 px-4">City</th>
+                                    <th class="py-3 px-3">State</th>
+                                    <th class="py-3 px-3">Tag / Area</th>
+                                    <th class="py-3 px-3 text-center">Popular</th>
+                                    <th class="py-3 px-3 text-center">Status</th>
+                                    <th class="py-3 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for c in cities %}
+                                    <tr class="hover:bg-slate-50/70">
+                                        <td class="py-3 px-4 font-bold text-brand-950">{{ c.name }}</td>
+                                        <td class="py-3 px-3 text-slate-600">{{ c.state_name }}</td>
+                                        <td class="py-3 px-3">
+                                            <span class="text-slate-800 font-medium">{{ c.tag|default:"—" }}</span>
+                                            <span class="block text-[10px] text-slate-400">{{ c.area_summary }}</span>
+                                        </td>
+                                        <td class="py-3 px-3 text-center">
+                                            {% if c.is_popular %}
+                                                <span class="rounded-full bg-accent-50 px-2 py-0.5 text-[10px] font-black text-accent-700">★ Popular</span>
+                                            {% else %}
+                                                <span class="text-slate-400">—</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-3 px-3 text-center">
+                                            {% if c.is_active %}
+                                                <span class="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">Active</span>
+                                            {% else %}
+                                                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Disabled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <form method="post" action="{% url 'accounts:admin_city_delete' c.pk %}" class="inline" onsubmit="return confirm('Delete city {{ c.name }}?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="text-rose-600 hover:text-rose-900 font-bold text-xs">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        {% elif section == 'localities' %}
+            <!-- LOCALITIES SECTION -->
+            <div class="grid gap-8 lg:grid-cols-3">
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-base font-extrabold text-brand-950">Add Locality</h2>
+                    <form method="post" action="{% url 'accounts:admin_locality_create' %}" class="mt-4 space-y-3">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">Locality Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Civil Lines, Kankarbagh" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">City</label>
+                            <select name="city" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                                {% for c in cities %}
+                                    <option value="{{ c.pk }}">{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">PIN Code</label>
+                            <input type="text" name="pincode" placeholder="e.g. 211001" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <button type="submit" class="btn-primary w-full py-2.5 text-xs justify-center mt-2">
+                            Save Locality
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-base font-extrabold text-brand-950">Known Localities ({{ localities.count }})</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-[11px] font-extrabold uppercase text-slate-500">
+                                <tr>
+                                    <th class="py-3 px-4">Locality</th>
+                                    <th class="py-3 px-3">City</th>
+                                    <th class="py-3 px-3">PIN Code</th>
+                                    <th class="py-3 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for loc in localities %}
+                                    <tr class="hover:bg-slate-50/70">
+                                        <td class="py-3 px-4 font-bold text-slate-900">{{ loc.name }}</td>
+                                        <td class="py-3 px-3 text-slate-600">{{ loc.city_name }}</td>
+                                        <td class="py-3 px-3 text-slate-500">{{ loc.pincode|default:"—" }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <form method="post" action="{% url 'accounts:admin_locality_delete' loc.pk %}" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="text-rose-600 hover:text-rose-900 font-bold text-xs">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        {% elif section == 'coaching' or section == 'landmarks' %}
+            <!-- COACHING CENTRES & LANDMARKS SECTION -->
+            <div class="grid gap-8 lg:grid-cols-3">
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-base font-extrabold text-brand-950">
+                        Add {% if section == 'coaching' %}Coaching Centre{% else %}Landmark{% endif %}
+                    </h2>
+                    <form method="post" action="{% url 'accounts:admin_landmark_create' %}" class="mt-4 space-y-3">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">Institution / Landmark Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Allen Career Institute, IIT Delhi" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">Category</label>
+                            <select name="category" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                                {% if section == 'coaching' %}
+                                    <option value="coaching">Coaching Institute</option>
+                                {% else %}
+                                    <option value="college">College</option>
+                                    <option value="university">University</option>
+                                    <option value="railway_station">Railway Station</option>
+                                    <option value="bus_station">Bus Station</option>
+                                    <option value="metro_station">Metro Station</option>
+                                    <option value="market">Market / Mall</option>
+                                    <option value="hospital">Hospital</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">City *</label>
+                            <input type="text" name="city" required placeholder="e.g. Kota, Prayagraj" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">State</label>
+                            <input type="text" name="state" value="Uttar Pradesh" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700">Latitude *</label>
+                                <input type="number" step="any" name="latitude" required placeholder="25.1388" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700">Longitude *</label>
+                                <input type="number" step="any" name="longitude" required placeholder="75.8456" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">Search Keywords / Aliases</label>
+                            <input type="text" name="aliases" placeholder="e.g. Allen Kota, Allen CP Tower" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <button type="submit" class="btn-primary w-full py-2.5 text-xs justify-center mt-2">
+                            Save Point of Interest
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-base font-extrabold text-brand-950">
+                            {% if section == 'coaching' %}Coaching Hubs ({{ coaching_centres.count }}){% else %}Key Landmarks ({{ landmarks.count }}){% endif %}
+                        </h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-[11px] font-extrabold uppercase text-slate-500">
+                                <tr>
+                                    <th class="py-3 px-4">Name</th>
+                                    <th class="py-3 px-3">Category</th>
+                                    <th class="py-3 px-3">City</th>
+                                    <th class="py-3 px-3">Coordinates</th>
+                                    <th class="py-3 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for lm in section == 'coaching'|yesno:"coaching_centres,landmarks" %}
+                                    <tr class="hover:bg-slate-50/70">
+                                        <td class="py-3 px-4 font-bold text-slate-900">{{ lm.name }}</td>
+                                        <td class="py-3 px-3 text-slate-600">{{ lm.get_category_display }}</td>
+                                        <td class="py-3 px-3 text-slate-800 font-semibold">{{ lm.city }}</td>
+                                        <td class="py-3 px-3 font-mono text-[10px] text-slate-500">{{ lm.latitude }}, {{ lm.longitude }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <form method="post" action="{% url 'accounts:admin_landmark_delete' lm.pk %}" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="text-rose-600 hover:text-rose-900 font-bold text-xs">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        {% elif section == 'states' %}
+            <!-- STATES SECTION -->
+            <div class="grid gap-8 lg:grid-cols-3">
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-base font-extrabold text-brand-950">Add State</h2>
+                    <form method="post" action="{% url 'accounts:admin_state_create' %}" class="mt-4 space-y-3">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">State Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Madhya Pradesh" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700">State Code</label>
+                            <input type="text" name="code" placeholder="e.g. MP" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">
+                        </div>
+                        <button type="submit" class="btn-primary w-full py-2.5 text-xs justify-center mt-2">
+                            Save State
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-base font-extrabold text-brand-950">Configured States ({{ states.count }})</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-[11px] font-extrabold uppercase text-slate-500">
+                                <tr>
+                                    <th class="py-3 px-4">State</th>
+                                    <th class="py-3 px-3">Code</th>
+                                    <th class="py-3 px-3 text-center">Status</th>
+                                    <th class="py-3 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for s in states %}
+                                    <tr class="hover:bg-slate-50/70">
+                                        <td class="py-3 px-4 font-bold text-slate-900">{{ s.name }}</td>
+                                        <td class="py-3 px-3 font-mono text-slate-600">{{ s.code|default:"—" }}</td>
+                                        <td class="py-3 px-3 text-center">
+                                            {% if s.is_active %}
+                                                <span class="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">Active</span>
+                                            {% else %}
+                                                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Disabled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <form method="post" action="{% url 'accounts:admin_state_delete' s.pk %}" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="text-rose-600 hover:text-rose-900 font-bold text-xs">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</main>
+{% endblock %}
+

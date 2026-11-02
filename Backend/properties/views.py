@@ -18,7 +18,7 @@ from enquiries.models import Enquiry
 
 from .demo_data import FEATURED_PROPERTIES
 from .forms import PropertyForm, PropertyImageForm, RoomForm
-from .models import Favourite, Property, PropertyImage, Room
+from .models import Favourite, Property, PropertyImage, PropertyReport, Room
 
 STAY_TYPE_LABELS = {
     "pg": "PG Accommodation",
@@ -955,3 +955,47 @@ def toggle_favourite(request, slug):
     ):
         return redirect(next_url)
     return redirect(property_obj.get_absolute_url())
+
+
+# =====================================================================
+# REPORT MISLEADING OR FRAUDULENT LISTING
+# =====================================================================
+
+@require_POST
+def property_report_submit(request, slug):
+    """Allow students and users to report suspicious or misleading listings."""
+    property_obj = get_object_or_404(Property, slug=slug)
+    reason = request.POST.get("reason", PropertyReport.Reason.OTHER).strip()
+    details = request.POST.get("details", "").strip()
+    reporter_name = request.POST.get("reporter_name", "").strip()
+    reporter_email = request.POST.get("reporter_email", "").strip()
+    reporter_phone = request.POST.get("reporter_phone", "").strip()
+
+    if not details:
+        messages.error(
+            request, "Please provide details explaining why you are reporting this listing."
+        )
+        return redirect(property_obj.get_absolute_url())
+
+    reported_by = request.user if request.user.is_authenticated else None
+    if reported_by:
+        reporter_name = reporter_name or reported_by.get_full_name()
+        reporter_email = reporter_email or reported_by.email
+        reporter_phone = reporter_phone or getattr(reported_by, "mobile_number", "")
+
+    PropertyReport.objects.create(
+        property=property_obj,
+        reported_by=reported_by,
+        reporter_name=reporter_name,
+        reporter_email=reporter_email,
+        reporter_phone=reporter_phone,
+        reason=reason,
+        details=details,
+        status=PropertyReport.Status.PENDING,
+    )
+    messages.success(
+        request,
+        "Thank you. Your report has been submitted to platform administrators for review.",
+    )
+    return redirect(property_obj.get_absolute_url())
+

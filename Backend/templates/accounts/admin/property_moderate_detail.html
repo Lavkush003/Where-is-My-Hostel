@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Moderate: {{ property.name }} | {{ site_name }}{% endblock %}
+
+{% block content %}
+<header class="border-b border-slate-200 bg-white shadow-sm">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <nav class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <a href="{% url 'accounts:admin_dashboard' %}" class="hover:text-brand-900">Admin</a>
+                    <span>/</span>
+                    <a href="{% url 'accounts:admin_property_list' %}" class="hover:text-brand-900">Moderation Queue</a>
+                    <span>/</span>
+                    <span class="text-brand-950 font-bold truncate">{{ property.name }}</span>
+                </nav>
+                <div class="mt-2 flex flex-wrap items-center gap-3">
+                    <h1 class="text-3xl font-black text-brand-950">{{ property.name }}</h1>
+                    {% if property.approval_status == 'approved' %}
+                        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">Approved & Live</span>
+                    {% elif property.approval_status == 'pending' %}
+                        <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 ring-1 ring-inset ring-amber-300">Pending Review</span>
+                    {% elif property.approval_status == 'rejected' %}
+                        <span class="rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 ring-1 ring-inset ring-rose-200">Rejected</span>
+                    {% elif property.approval_status == 'suspended' %}
+                        <span class="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700 ring-1 ring-inset ring-purple-200">Suspended</span>
+                    {% endif %}
+                </div>
+                <p class="mt-1 text-xs text-slate-500">
+                    {{ property.get_property_type_display }} · {{ property.city }}, {{ property.state }} · Submitted on {{ property.created_at|date:"M d, Y H:i" }}
+                </p>
+            </div>
+
+            <!-- Quick Action Links -->
+            <div class="flex items-center gap-2">
+                <a href="{% url 'properties:detail' property.slug %}" target="_blank" class="btn-secondary text-xs">
+                    <svg class="mr-1.5 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                    Student Live View
+                </a>
+                <a href="{% url 'accounts:admin_property_list' %}" class="btn-secondary text-xs">
+                    ← Back to List
+                </a>
+            </div>
+        </div>
+
+        <!-- Alert Banner if Suspended or Rejected -->
+        {% if property.rejection_reason %}
+            <div class="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                <p class="text-xs font-bold text-rose-900">Current Rejection Reason:</p>
+                <p class="mt-0.5 text-xs text-rose-800">{{ property.rejection_reason }}</p>
+            </div>
+        {% endif %}
+        {% if property.is_suspended %}
+            <div class="mt-4 rounded-2xl border border-purple-200 bg-purple-50 p-4">
+                <p class="text-xs font-bold text-purple-900">Suspension Notice:</p>
+                <p class="mt-0.5 text-xs text-purple-800">{{ property.moderation_notes|default:"Listing suspended due to safety or quality non-compliance." }}</p>
+            </div>
+        {% endif %}
+    </div>
+</header>
+
+<main class="bg-slate-50 py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+
+        <!-- Moderation Controls Action Bar -->
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-500">Moderator Decision</h2>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                <!-- 1. Approve Button -->
+                <form method="post" action="{% url 'accounts:admin_property_approve' property.pk %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-accent px-5 py-2.5 text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700">
+                        <svg class="mr-1.5 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                        Approve & Publish Listing
+                    </button>
+                </form>
+
+                <!-- 2. Suspend Button -->
+                <form method="post" action="{% url 'accounts:admin_property_suspend' property.pk %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-xl border border-purple-300 bg-purple-50 px-4 py-2.5 text-xs font-bold text-purple-800 transition hover:bg-purple-100">
+                        <svg class="mr-1.5 inline h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        Suspend Property
+                    </button>
+                </form>
+
+                <!-- 3. Remove Misleading Listing -->
+                <form method="post" action="{% url 'accounts:admin_property_delete' property.pk %}" class="inline" onsubmit="return confirm('Are you sure you want to permanently delete this listing? This action cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100">
+                        <svg class="mr-1.5 inline h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+                        Remove Misleading Listing
+                    </button>
+                </form>
+            </div>
+
+            <!-- Rejection Form -->
+            <div class="mt-6 border-t border-slate-100 pt-6">
+                <form method="post" action="{% url 'accounts:admin_property_reject' property.pk %}" class="space-y-3">
+                    {% csrf_token %}
+                    <label for="rejection_reason" class="block text-xs font-extrabold text-slate-800">
+                        Reject with Reason (Visible to owner):
+                    </label>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+                        <textarea id="rejection_reason"
+                                  name="rejection_reason"
+                                  rows="2"
+                                  placeholder="e.g. Inadequate room photos, fake pricing, incorrect address, or unverified contact information..."
+                                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500"></textarea>
+                        <button type="submit" class="btn-secondary py-2.5 px-4 text-xs font-bold text-rose-700 hover:bg-rose-50 shrink-0">
+                            Reject Listing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Two Columns: Left = Images & Rooms | Right = Owner Info & Location -->
+        <div class="grid gap-8 lg:grid-cols-3">
+            
+            <!-- Left (2 Cols): Uploaded Images & Rooms Inspection -->
+            <div class="space-y-8 lg:col-span-2">
+                
+                <!-- 1. Inspect Uploaded Images (PROMPT 8) -->
+                <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-base font-extrabold text-brand-950">Inspect Uploaded Images ({{ gallery_images.count }})</h2>
+                            <p class="text-xs text-slate-500">Examine all photographs uploaded by owner for quality, authenticity and appropriateness</p>
+                        </div>
+                    </div>
+
+                    {% if gallery_images %}
+                        <div class="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                            {% for img in gallery_images %}
+                                <div class="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                                    <img src="{{ img.image.url }}" alt="{{ img.caption|default:img.get_category_display }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 text-white">
+                                        <div class="flex items-center justify-between">
+                                            <span class="rounded-md bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase backdrop-blur">{{ img.get_category_display }}</span>
+                                            {% if img.is_primary %}
+                                                <span class="rounded-md bg-accent-500 px-2 py-0.5 text-[10px] font-black text-white">Cover</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if img.caption %}
+                                            <p class="mt-1 truncate text-[11px] text-white/90">{{ img.caption }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="mt-6 rounded-2xl bg-amber-50 p-6 text-center">
+                            <p class="text-xs font-bold text-amber-900">No gallery images uploaded</p>
+                            <p class="mt-1 text-[11px] text-amber-800">Only the default cover photo is present. Consider asking owner for room and bathroom photos.</p>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <!-- 2. Room Configurations & Pricing -->
+                <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-base font-extrabold text-brand-950">Room Configurations & Pricing ({{ rooms.count }})</h2>
+                            <p class="text-xs text-slate-500">Check rent, security deposit, sharing occupancy, bathroom type, and AC options</p>
+                        </div>
+                    </div>
+
+                    {% if rooms %}
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="border-b border-slate-100 bg-slate-50 text-[11px] font-extrabold uppercase text-slate-500">
+                                    <tr>
+                                        <th class="py-2.5 px-3">Room Type</th>
+                                        <th class="py-2.5 px-3">Occupancy</th>
+                                        <th class="py-2.5 px-3">Rent / Mo</th>
+                                        <th class="py-2.5 px-3">Deposit</th>
+                                        <th class="py-2.5 px-3">Beds (Avail/Total)</th>
+                                        <th class="py-2.5 px-3">Features</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    {% for r in rooms %}
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="py-3 px-3 font-bold text-slate-900">{{ r.room_type }}</td>
+                                            <td class="py-3 px-3">{{ r.get_occupancy_display }}</td>
+                                            <td class="py-3 px-3 font-extrabold text-brand-950">₹{{ r.monthly_rent|intcomma }}</td>
+                                            <td class="py-3 px-3 text-slate-500">₹{{ r.security_deposit|intcomma }}</td>
+                                            <td class="py-3 px-3">{{ r.available_beds }} / {{ r.total_beds }}</td>
+                                            <td class="py-3 px-3">
+                                                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">{{ r.get_bathroom_type_display }}</span>
+                                                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">{{ r.get_air_conditioning_display }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="mt-4 rounded-2xl bg-slate-50 p-6 text-center text-xs text-slate-500">
+                            No individual rooms added yet. Default monthly rent: ₹{{ property.monthly_rent|intcomma }}
+                        </div>
+                    {% endif %}
+                </section>
+
+                <!-- 3. Description & Facilities -->
+                <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-base font-extrabold text-brand-950">Description & Facilities</h2>
+                    <p class="mt-3 text-xs leading-relaxed text-slate-700 whitespace-pre-line">{{ property.description }}</p>
+
+                    <div class="mt-4 border-t border-slate-100 pt-4">
+                        <p class="text-xs font-bold text-slate-800">Facilities Listed:</p>
+                        <div class="mt-2 flex flex-wrap gap-1.5">
+                            {% for f in property.facilities_list %}
+                                <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{{ f }}</span>
+                            {% empty %}
+                                <span class="text-xs text-slate-400">None listed</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. User Complaints / Reports Filed on this Property -->
+                {% if reports %}
+                    <section class="rounded-3xl border border-rose-200 bg-rose-50/50 p-6 shadow-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2.5 w-2.5 rounded-full bg-rose-600"></span>
+                            <h2 class="text-base font-black text-rose-950">Safety Reports Filed Against This Listing ({{ reports.count }})</h2>
+                        </div>
+                        <div class="mt-4 divide-y divide-rose-100">
+                            {% for rep in reports %}
+                                <div class="py-3">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-bold text-rose-900">{{ rep.get_reason_display }}</span>
+                                        <span class="text-[11px] text-rose-700">{{ rep.created_at|date:"M d, Y" }} · Status: <strong>{{ rep.get_status_display }}</strong></span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-rose-800">"{{ rep.details }}"</p>
+                                    <p class="mt-0.5 text-[11px] text-rose-600">Reported by: {{ rep.reporter_name|default:"Anonymous student" }} ({{ rep.reporter_email|default:"No email" }})</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+
+            </div>
+
+            <!-- Right (1 Col): Owner Details & Geographic Info -->
+            <div class="space-y-8">
+                
+                <!-- Owner Details Card (PROMPT 8) -->
+                <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-500">Property Owner</h2>
+                        <a href="{% url 'accounts:admin_user_activity' owner.pk %}" class="text-xs font-bold text-brand-700 hover:underline">Full Activity</a>
+                    </div>
+
+                    <div class="mt-4 flex items-center gap-3">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 text-purple-800 font-black text-base">
+                            {{ owner.get_full_name|slice:":1"|default:"O" }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-extrabold text-slate-900 truncate">{{ owner.get_full_name }}</p>
+                            <p class="text-xs text-slate-500 truncate">{{ owner.email }}</p>
+                            <span class="inline-flex rounded bg-purple-50 px-2 py-0.5 text-[10px] font-black uppercase text-purple-700">
+                                Verified Owner
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 space-y-2 border-t border-slate-100 pt-3 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Phone:</span>
+                            <span class="font-semibold text-slate-900">{{ property.contact_number }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Business Name:</span>
+                            <span class="font-semibold text-slate-900">{{ owner_profile.business_name|default:"Independent Owner" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Member Since:</span>
+                            <span class="text-slate-700">{{ owner.date_joined|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Account Status:</span>
+                            <span class="font-bold {% if owner.is_active %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                                {% if owner.is_active %}Active{% else %}Deactivated{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Other Listings by this owner -->
+                    {% if owner_other_properties %}
+                        <div class="mt-5 border-t border-slate-100 pt-4">
+                            <p class="text-[11px] font-bold uppercase text-slate-400">Other Listings by this Owner ({{ owner_other_properties.count }}):</p>
+                            <div class="mt-2 space-y-2">
+                                {% for op in owner_other_properties %}
+                                    <div class="flex items-center justify-between text-xs">
+                                        <a href="{% url 'accounts:admin_property_moderate' op.pk %}" class="font-semibold text-brand-950 hover:underline truncate">{{ op.name }}</a>
+                                        <span class="text-[10px] text-slate-400">{{ op.get_approval_status_display }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <!-- Location Details Card -->
+                <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-3">Address & Coordinates</h2>
+                    <div class="mt-4 space-y-2.5 text-xs">
+                        <div>
+                            <span class="text-slate-400 block">Complete Address:</span>
+                            <span class="font-medium text-slate-800">{{ property.address }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">City:</span>
+                            <span class="font-semibold text-slate-900">{{ property.city }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">State:</span>
+                            <span class="text-slate-700">{{ property.state }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">PIN Code:</span>
+                            <span class="text-slate-700">{{ property.pincode|default:"Not specified" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Locality:</span>
+                            <span class="text-slate-700">{{ property.locality|default:"Not specified" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Landmark:</span>
+                            <span class="text-slate-700">{{ property.landmark|default:"None" }}</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-100 pt-2 font-mono text-[11px]">
+                            <span class="text-slate-500">Coordinates:</span>
+                            <span class="text-slate-800">{{ property.latitude|default:"—" }}, {{ property.longitude|default:"—" }}</span>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+

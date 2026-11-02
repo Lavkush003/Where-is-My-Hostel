@@ -54,20 +54,13 @@ def register(request):
 @login_required
 def dashboard(request):
     user = request.user
-    context = {"user": user}
 
     if user.is_platform_admin:
-        context.update(
-            {
-                "user_count": user.__class__.objects.count(),
-                "owner_count": user.__class__.objects.filter(role=user.Role.OWNER).count(),
-                "property_count": Property.objects.count(),
-                "enquiry_count": Enquiry.objects.count(),
-                "recent_properties": Property.objects.select_related("owner")[:5],
-            }
-        )
-        template_name = "accounts/dashboard_admin.html"
-    elif user.is_owner:
+        from .admin_views import admin_dashboard
+        return admin_dashboard(request)
+
+    context = {"user": user}
+    if user.is_owner:
         profile, _ = OwnerProfile.objects.get_or_create(
             user=user,
             defaults={

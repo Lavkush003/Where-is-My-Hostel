@@ -21,5 +21,6 @@ urlpatterns = [
     path("manage/<slug:slug>/gallery/<int:image_pk>/delete/", views.gallery_delete, name="gallery_delete"),
     path("manage/<slug:slug>/gallery/<int:image_pk>/primary/", views.gallery_set_primary, name="gallery_set_primary"),
     path("favourite/<slug:slug>/", views.toggle_favourite, name="favourite"),
+    path("<slug:slug>/report/", views.property_report_submit, name="report"),
     path("<slug:slug>/", views.property_detail, name="detail"),
 ]

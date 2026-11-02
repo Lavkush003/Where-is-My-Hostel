@@ -15,6 +15,8 @@ def role_required(*allowed_roles):
         def wrapped(request, *args, **kwargs):
             user = request.user
             allowed = set(allowed_roles)
+            if "admin" in allowed and user.is_platform_admin:
+                return view_func(request, *args, **kwargs)
             if user.role not in allowed:
                 raise PermissionDenied("You do not have permission to access this page.")
             return view_func(request, *args, **kwargs)

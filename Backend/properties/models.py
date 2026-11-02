@@ -45,6 +45,12 @@ class Property(models.Model):
         GIRLS = "girls", "Girls"
         UNISEX = "unisex", "Unisex / All"
 
+    class ApprovalStatus(models.TextChoices):
+        PENDING = "pending", "Pending Approval"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+        SUSPENDED = "suspended", "Suspended"
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -107,12 +113,39 @@ class Property(models.Model):
         default=True,
         help_text="Listing requires administrator approval before becoming publicly visible.",
     )
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.choices,
+        default=ApprovalStatus.APPROVED,
+        db_index=True,
+    )
+    rejection_reason = models.TextField(
+        blank=True,
+        default="",
+        help_text="Reason provided by administrator if listing is rejected.",
+    )
+    moderation_notes = models.TextField(
+        blank=True,
+        default="",
+        help_text="Internal notes by platform administrators.",
+    )
+    is_suspended = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Suspended by administrator due to suspicious or fraudulent activity.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
         verbose_name_plural = "properties"
+        indexes = [
+            models.Index(fields=["city", "is_approved", "is_active", "is_suspended"]),
+            models.Index(fields=["approval_status", "-created_at"]),
+            models.Index(fields=["property_type", "gender_preference"]),
+            models.Index(fields=["monthly_rent"]),
+        ]
 
     def __str__(self):
         return self.name
@@ -126,6 +159,33 @@ class Property(models.Model):
                 suffix += 1
                 slug = f"{base}-{suffix}"[:220]
             self.slug = slug
+
+        # Synchronize approval_status and visibility flags
+        if self.approval_status == self.ApprovalStatus.APPROVED:
+            self.is_approved = True
+            self.is_suspended = False
+        elif self.approval_status == self.ApprovalStatus.REJECTED:
+            self.is_approved = False
+        elif self.approval_status == self.ApprovalStatus.SUSPENDED:
+            self.is_approved = False
+            self.is_suspended = True
+            self.is_active = False
+        elif self.approval_status == self.ApprovalStatus.PENDING:
+            self.is_approved = False
+
+        # If is_approved flag changed directly, keep approval_status aligned
+        if self.is_approved and self.approval_status != self.ApprovalStatus.APPROVED:
+            self.approval_status = self.ApprovalStatus.APPROVED
+            self.is_suspended = False
+        elif not self.is_approved and self.approval_status == self.ApprovalStatus.APPROVED:
+            self.approval_status = self.ApprovalStatus.PENDING
+
+        if self.is_suspended:
+            self.is_approved = False
+            self.is_active = False
+            if self.approval_status != self.ApprovalStatus.SUSPENDED:
+                self.approval_status = self.ApprovalStatus.SUSPENDED
+
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -137,7 +197,12 @@ class Property(models.Model):
 
     @property
     def is_publicly_visible(self):
-        return self.is_active and self.is_approved
+        return (
+            self.is_active
+            and self.is_approved
+            and not self.is_suspended
+            and self.approval_status == self.ApprovalStatus.APPROVED
+        )
 
     @property
     def min_monthly_rent(self):
@@ -235,6 +300,10 @@ class Room(models.Model):
 
     class Meta:
         ordering = ["monthly_rent", "occupancy"]
+        indexes = [
+            models.Index(fields=["property", "is_available"]),
+            models.Index(fields=["occupancy", "monthly_rent"]),
+        ]
 
     def __str__(self):
         return f"{self.property.name} - {self.room_type} ({self.get_occupancy_display()})"
@@ -306,3 +375,68 @@ class Favourite(models.Model):
 
     def __str__(self):
         return f"{self.student} saved {self.property}"
+
+
+class PropertyReport(models.Model):
+    """User and student reports filed against suspicious, misleading, or fraudulent property listings."""
+
+    class Reason(models.TextChoices):
+        FAKE_LISTING = "fake_listing", "Fake or non-existent property"
+        INCORRECT_PRICING = "incorrect_pricing", "Incorrect or misleading rent/deposit"
+        INAPPROPRIATE_PHOTOS = "inappropriate_photos", "Inappropriate or misleading photos"
+        FRAUDULENT_OWNER = "fraudulent_owner", "Unresponsive or fraudulent owner"
+        SAFETY_CONCERN = "safety_concern", "Safety concern or rule violation"
+        OTHER = "other", "Other issue"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending Review"
+        REVIEWED = "reviewed", "Under Review"
+        RESOLVED = "resolved", "Resolved"
+        DISMISSED = "dismissed", "Dismissed"
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="property_reports",
+    )
+    reporter_name = models.CharField(max_length=150, blank=True)
+    reporter_email = models.EmailField(blank=True)
+    reporter_phone = models.CharField(max_length=16, blank=True)
+    reason = models.CharField(
+        max_length=40,
+        choices=Reason.choices,
+        default=Reason.OTHER,
+    )
+    details = models.TextField(help_text="Detailed explanation of the report.")
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    action_taken = models.TextField(blank=True, default="", help_text="Notes on action taken by moderator.")
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "property report"
+        verbose_name_plural = "property reports"
+
+    def __str__(self):
+        return f"Report #{self.pk} on {self.property.name} ({self.get_status_display()})"
+
