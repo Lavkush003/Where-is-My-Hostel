@@ -364,8 +364,8 @@ class Command(BaseCommand):
 
         created_props = []
         for pdata in DEMO_PROPERTIES:
-            rooms_data = pdata.pop("rooms")
-            seed_img_name = pdata.pop("seed_image")
+            rooms_data = pdata.get("rooms", [])
+            seed_img_name = pdata.get("seed_image")
 
             prop, p_created = Property.objects.update_or_create(
                 name=pdata["name"],

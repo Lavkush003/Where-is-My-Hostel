@@ -115,3 +115,28 @@ class AuthenticatedNavigationTests(TestCase):
         self.assertContains(response, "student@example.com")
         self.assertContains(response, "Admin panel")
         self.assertContains(response, reverse("accounts:logout"))
+
+
+class SeedDemoDataCommandTests(TestCase):
+    def test_seed_demo_data_command(self):
+        from django.core.management import call_command
+        from io import StringIO
+        from properties.models import Property, Room
+        from enquiries.models import Enquiry
+
+        out = StringIO()
+        call_command("seed_demo_data", stdout=out)
+        output = out.getvalue()
+
+        self.assertIn("Demo data seeding completed successfully", output)
+        self.assertTrue(get_user_model().objects.filter(email="admin@whereismyhostel.example").exists())
+        self.assertTrue(get_user_model().objects.filter(email="owner@whereismyhostel.example").exists())
+        self.assertTrue(get_user_model().objects.filter(email="student@whereismyhostel.example").exists())
+        self.assertGreaterEqual(Property.objects.count(), 6)
+        self.assertGreaterEqual(Room.objects.count(), 6)
+        self.assertGreaterEqual(Enquiry.objects.count(), 3)
+
+        # Idempotency test: running again updates existing records without error
+        out_second = StringIO()
+        call_command("seed_demo_data", stdout=out_second)
+        self.assertIn("Demo data seeding completed successfully", out_second.getvalue())
