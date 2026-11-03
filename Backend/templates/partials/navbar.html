@@ -1,5 +1,21 @@
 {% load static %}
-<header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur">
+<!-- Top Portal Announcement Ticker -->
+<div class="bg-slate-950 text-white text-[11px] font-bold border-b border-white/10 px-4 py-1.5 transition">
+    <div class="mx-auto max-w-7xl flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2 truncate">
+            <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+            <span class="text-amber-300 font-extrabold uppercase tracking-wider">Admission Hub 2026:</span>
+            <span class="truncate text-slate-300">0% Brokerage on verified student stays in Kota, Prayagraj, Delhi, Lucknow & Patna</span>
+        </div>
+        <div class="hidden sm:flex items-center gap-3 shrink-0 text-slate-300">
+            <span class="flex items-center gap-1"><svg class="h-3.5 w-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Verified Owners Only</span>
+            <span class="text-white/20">|</span>
+            <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-300 transition text-emerald-400">Direct WhatsApp Help</a>
+        </div>
+    </div>
+</div>
+
+<header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
     <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8" aria-label="Main navigation">
         <a href="{% url 'core:home' %}" class="flex shrink-0 items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
             <span class="relative flex h-10 w-10 items-center justify-center rounded-xl bg-brand-950 text-white shadow-sm">
@@ -156,6 +172,10 @@
             {% else %}
                 <a href="{% url 'accounts:login' %}" class="btn-secondary">Log in</a>
                 <a href="{% url 'accounts:register' %}" class="btn-primary">Register</a>
+                <a href="{% url 'accounts:register' %}" class="ml-1 hidden xl:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-3.5 py-2 text-xs font-black text-white shadow-md shadow-orange-500/25 transition hover:from-orange-600 hover:to-amber-600 hover:scale-105">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    <span>List Property</span>
+                </a>
             {% endif %}
         </div>
 
